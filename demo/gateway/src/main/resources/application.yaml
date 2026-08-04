@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: gateway
+  cloud:
+    gateway:
+      routes:
+        - id: goods-route
+          uri: lb://GOODS-PROVIDER8090
+          predicates:
+            - Path=/goods/**
+        - id: order-route
+          uri: lb://ORDER-CONSUMER8091
+          predicates:
+            - Path=/order/**
+server:
+  port: 80
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
