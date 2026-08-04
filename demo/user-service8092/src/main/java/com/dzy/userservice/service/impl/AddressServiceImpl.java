@@ -100,7 +100,6 @@ public class AddressServiceImpl implements AddressService {
                 Address newDefault = remaining.get(0);
                 addressMapper.setDefault(newDefault.getId(), userId);
             }
-            // 如果没有剩余地址，则无需操作
         }
     }
 
