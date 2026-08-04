@@ -2,7 +2,7 @@ package com.dzy.userservice.service.impl;
 
 import com.dzy.common.entity.User;
 import com.dzy.common.exception.BusinessException;
-import com.dzy.userservice.Mapper.UserMapper;
+import com.dzy.userservice.mapper.UserMapper;
 import com.dzy.userservice.dto.LoginRequest;
 import com.dzy.userservice.dto.RegisterRequest;
 import com.dzy.userservice.service.UserService;

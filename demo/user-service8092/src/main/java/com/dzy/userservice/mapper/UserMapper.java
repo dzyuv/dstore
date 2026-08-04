@@ -1,4 +1,4 @@
-package com.dzy.userservice.Mapper;
+package com.dzy.userservice.mapper;
 
 import com.dzy.common.entity.User;
 import jakarta.validation.constraints.NotBlank;

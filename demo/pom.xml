@@ -21,6 +21,7 @@
         <module>goods-provider8090</module>
         <module>order-consumer8091</module>
         <module>service-eureka8761</module>
+        <module>user-service8092</module>
     </modules>
 
 
@@ -31,6 +32,7 @@
 
 
     <dependencyManagement>
+
         <dependencies>
             <dependency>
                 <groupId>org.springframework.cloud</groupId>
