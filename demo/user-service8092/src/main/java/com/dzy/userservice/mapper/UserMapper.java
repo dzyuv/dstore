@@ -10,8 +10,8 @@ import java.util.List;
 @Mapper
 public interface UserMapper {
 
-    @Select("SELECT * FROM user WHERE username= #{username}")
-    User selectByUsername(@NotBlank(message = "用户名不能为空") String username);
+    @Select("SELECT * FROM user WHERE username = #{username} OR phone = #{username}")
+    User selectByUsername(String username);
 
     @Select("SELECT COUNT(*) FROM user WHERE phone=#{phone}")
     int countByPhone(@NotBlank(message = "手机号不能为空") @Pattern(regexp = "^1[3-9]\\d{9}$", message = "手机号格式不正确") String phone);

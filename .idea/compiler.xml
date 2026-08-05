@@ -6,10 +6,18 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
+      </profile>
+      <profile name="Annotation profile for demo" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.36/lombok-1.18.36.jar" />
+        </processorPath>
         <module name="goods-provider8090" />
+        <module name="common" />
         <module name="order-consumer8091" />
         <module name="user-service8092" />
-        <module name="common" />
         <module name="gateway" />
         <module name="service-eureka8761" />
       </profile>
@@ -17,12 +25,13 @@
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
-      <module name="common" options="-parameters" />
-      <module name="gateway" options="-parameters" />
-      <module name="goods-provider8090" options="-parameters" />
-      <module name="order-consumer8091" options="-parameters" />
-      <module name="service-eureka8761" options="-parameters" />
-      <module name="user-service8092" options="-parameters" />
+      <module name="common" options="-parameters -parameters" />
+      <module name="demo" options="-parameters -parameters" />
+      <module name="gateway" options="-parameters -parameters" />
+      <module name="goods-provider8090" options="-parameters -parameters" />
+      <module name="order-consumer8091" options="-parameters -parameters" />
+      <module name="service-eureka8761" options="-parameters -parameters" />
+      <module name="user-service8092" options="-parameters -parameters" />
     </option>
   </component>
 </project>

@@ -5,14 +5,16 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.openfeign.EnableFeignClients;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = {"com.dzy.goodsprovider8090", "com.dzy.common"})
 @EnableDiscoveryClient
-@MapperScan
+@EnableFeignClients
+@EnableTransactionManagement
+@MapperScan("com.dzy.goodsprovider8090.mapper")
 public class GoodsProvider8090Application {
 
     public static void main(String[] args) {
         SpringApplication.run(GoodsProvider8090Application.class, args);
     }
-
 }

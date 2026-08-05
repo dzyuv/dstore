@@ -28,6 +28,15 @@ public class AddressServiceImpl implements AddressService {
     }
 
     @Override
+    public Address getByIdAndUser(Long addressId, Long userId) {
+        Address address = addressMapper.selectByIdAndUser(addressId, userId);
+        if (address == null) {
+            throw new BusinessException("地址不存在或不属于当前用户");
+        }
+        return address;
+    }
+
+    @Override
     @Transactional
     public Address addAddress(Long userId, AddressRequest request) {
         // 如果该用户还没有任何地址，则新增的地址自动设为默认

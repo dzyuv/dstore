@@ -25,4 +25,10 @@ public interface StoreMapper {
 
     @Select("SELECT * FROM store WHERE id = #{id} AND merchant_id = #{merchantId}")
     Store selectByIdAndMerchant(@Param("id") Long id, @Param("merchantId") Long merchantId);
+
+    @Select("SELECT * FROM store WHERE id = #{id}")
+    Store selectById(Long id);
+
+    @Update("UPDATE store SET status = #{status} WHERE merchant_id = #{merchantId}")
+    int updateStatusByMerchant(@Param("merchantId") Long merchantId, @Param("status") Integer status);
 }

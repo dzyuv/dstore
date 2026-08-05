@@ -3,10 +3,13 @@ package com.dzy.userservice.service;
 import com.dzy.common.entity.User;
 import com.dzy.userservice.dto.LoginRequest;
 import com.dzy.userservice.dto.RegisterRequest;
-import jakarta.validation.Valid;
+
+import java.util.Map;
 
 public interface UserService {
-    String login(@Valid LoginRequest request);
+    Map<String, Object> login(LoginRequest request);
 
-    User register(@Valid RegisterRequest request);
+    User register(RegisterRequest request);
+
+    User getById(Long userId);
 }

@@ -12,8 +12,12 @@ public class RegisterRequest {
     private String phone;
 
     @NotBlank(message = "密码不能为空")
-    @Size(min = 4, max = 25, message = "密码长度需在6-30位之间")
+    @Size(min = 6, max = 30, message = "密码长度需在6-30位之间")
     private String password;
 
+    @NotBlank(message = "验证码不能为空")
+    private String smsCode;
+
+    /** 仅支持 CUSTOMER，商家走入驻申请 */
     private String role;
 }

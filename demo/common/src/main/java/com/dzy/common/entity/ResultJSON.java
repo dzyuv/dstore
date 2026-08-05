@@ -20,19 +20,46 @@ public class ResultJSON {
         return r;
     }
 
+    public static ResultJSON success() {
+        return success(null);
+    }
+
     public static ResultJSON error(int code, String msg) {
         ResultJSON r = new ResultJSON();
         r.code = code;
         r.msg = msg;
         return r;
     }
-    // 快速成功，不带数据
-    public static ResultJSON success() {
-        return success(null);
-    }
 
-    // 快速错误，默认 500
     public static ResultJSON error(String msg) {
         return error(500, msg);
+    }
+
+    public boolean isSuccess() {
+        return this.code == 200;
+    }
+
+    public int getCode() {
+        return code;
+    }
+
+    public String getMsg() {
+        return msg;
+    }
+
+    public Object getData() {
+        return data;
+    }
+
+    public void setCode(int code) {
+        this.code = code;
+    }
+
+    public void setMsg(String msg) {
+        this.msg = msg;
+    }
+
+    public void setData(Object data) {
+        this.data = data;
     }
 }

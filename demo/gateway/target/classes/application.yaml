@@ -3,15 +3,23 @@ spring:
     name: gateway
   cloud:
     gateway:
+      discovery:
+        locator:
+          enabled: false
       routes:
+        - id: user-route
+          uri: lb://USER-SERVICE
+          predicates:
+            - Path=/users/**,/admin/**,/merchant/**
         - id: goods-route
           uri: lb://GOODS-PROVIDER8090
           predicates:
-            - Path=/goods/**
+            - Path=/goods/**,/categories/**,/cart/**
         - id: order-route
           uri: lb://ORDER-CONSUMER8091
           predicates:
-            - Path=/order/**
+            - Path=/orders/**,/payments/**,/deliveries/**,/reviews/**,/order/**
+
 server:
   port: 80
 

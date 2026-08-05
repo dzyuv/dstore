@@ -14,15 +14,11 @@ public class GatewayJwtUtil {
 
     private final SecretKey key;
 
-    // 从配置中心/环境变量注入 Base64 编码的密钥
     public GatewayJwtUtil(@Value("${jwt.secret}") String secretBase64) {
         byte[] keyBytes = Base64.getDecoder().decode(secretBase64);
         this.key = Keys.hmacShaKeyFor(keyBytes);
     }
 
-    /**
-     * 校验 Token 是否有效（签名正确且未过期）
-     */
     public boolean validateToken(String token) {
         try {
             parseToken(token);
@@ -32,18 +28,16 @@ public class GatewayJwtUtil {
         }
     }
 
-    /**
-     * 从 Token 中获取 userId
-     */
     public Long getUserId(String token) {
         return Long.valueOf(parseToken(token).getSubject());
     }
 
-    /**
-     * 从 Token 中获取 username
-     */
     public String getUsername(String token) {
         return parseToken(token).get("username", String.class);
+    }
+
+    public String getRole(String token) {
+        return parseToken(token).get("role", String.class);
     }
 
     private Claims parseToken(String token) {
