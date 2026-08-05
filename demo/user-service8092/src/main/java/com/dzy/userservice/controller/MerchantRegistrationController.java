@@ -15,7 +15,6 @@ public class MerchantRegistrationController {
     @Autowired
     private MerchantRegistrationService merchantRegistrationService;
 
-    // 商家提交入驻申请（公开）
     @PostMapping("/apply")
     public ResultJSON apply(@Valid @RequestBody MerchantApplyRequest request) {
         merchantRegistrationService.apply(request);

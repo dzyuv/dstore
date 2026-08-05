@@ -1,0 +1,16 @@
+package com.dzy.userservice.dto;
+
+import jakarta.validation.constraints.NotBlank;
+import lombok.Data;
+
+@Data
+public class StoreCreateRequest {
+    @NotBlank(message = "门店名称不能为空")
+    private String storeName;
+    private String logo;
+    @NotBlank(message = "门店地址不能为空")
+    private String address;
+    private String phone;
+    private String businessHours;
+    private Integer status = 1;   // 默认营业
+}

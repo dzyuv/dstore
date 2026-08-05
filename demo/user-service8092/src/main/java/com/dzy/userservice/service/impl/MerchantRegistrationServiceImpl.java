@@ -23,12 +23,11 @@ public class MerchantRegistrationServiceImpl implements MerchantRegistrationServ
     @Autowired
     private UserMapper userMapper;
 
-    /**
-     * 商家提交初次入驻申请
-     */
+    // 商家申请入驻
     @Transactional
     public void apply(MerchantApplyRequest request) {
-        // 1. 检查手机号是否已被注册（任何角色）
+
+        // 1. 检查手机号
         User existUser = userMapper.selectByPhone(request.getPhone());
         if (existUser != null) {
             throw new BusinessException("该手机号已被注册，请直接登录");
@@ -38,9 +37,9 @@ public class MerchantRegistrationServiceImpl implements MerchantRegistrationServ
         Merchant exist = merchantMapper.selectActiveApplyByPhone(request.getPhone());
         if (exist != null) {
             if ("PENDING".equals(exist.getStatus())) {
-                throw new BusinessException("您已有待审核的入驻申请，请耐心等待");
+                throw new BusinessException("已有待审核的入驻申请");
             } else if ("REJECTED".equals(exist.getStatus())) {
-                throw new BusinessException("您之前的申请已被驳回，请修改后重新提交（使用重新提交接口）");
+                throw new BusinessException("申请已被驳回，请修改后重新提交");
             }
         }
 
@@ -63,11 +62,10 @@ public class MerchantRegistrationServiceImpl implements MerchantRegistrationServ
         merchantMapper.insert(merchant);
     }
 
-    /**
-     * 驳回后重新提交（修改资料后重新提交审核）
-     */
+
     @Transactional
     public void reapply(MerchantReapplyRequest request) {
+
         // 1. 查询该商家申请记录
         Merchant merchant = merchantMapper.selectById(request.getMerchantId());
         if (merchant == null) {
@@ -77,7 +75,7 @@ public class MerchantRegistrationServiceImpl implements MerchantRegistrationServ
             throw new BusinessException("只有被驳回的申请才能重新提交");
         }
 
-        // 2. 检查手机号是否已被其他用户注册（排除自己）
+        // 2. 检查手机号是否已被其他用户注册
         User existUser = userMapper.selectByPhone(request.getPhone());
         if (existUser != null && !existUser.getId().equals(merchant.getUserId())) {
             throw new BusinessException("该手机号已被其他用户注册");
@@ -97,9 +95,6 @@ public class MerchantRegistrationServiceImpl implements MerchantRegistrationServ
     }
 
 
-    /**
-     * 根据用户ID查询已审核通过的商家信息（供后续门店管理等使用）
-     */
     public Merchant getApprovedMerchantByUserId(Long userId) {
         Merchant merchant = merchantMapper.selectByUserId(userId);
         if (merchant == null || !"APPROVED".equals(merchant.getStatus())) {
