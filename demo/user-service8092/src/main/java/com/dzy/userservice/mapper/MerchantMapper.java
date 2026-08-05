@@ -34,4 +34,14 @@ public interface MerchantMapper {
 
     @Select("SELECT * FROM merchant WHERE user_id = #{userId}")
     Merchant selectByUserId(Long userId);
+
+    @Update("UPDATE merchant SET status = #{status}, updated_at = NOW() WHERE id = #{id}")
+    int updateMerchantStatus(@Param("id") Long id, @Param("status") String status);
+
+    @Select("<script>" +
+            "SELECT * FROM merchant WHERE 1=1 " +
+            "<if test='status != null'> AND status = #{status} </if>" +
+            "ORDER BY id DESC" +
+            "</script>")
+    List<Merchant> selectMerchantList(@Param("status") String status);
 }

@@ -1,12 +1,12 @@
 package com.dzy.userservice.mapper;
 
+import com.dzy.common.entity.Merchant;
 import com.dzy.common.entity.User;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
-import org.apache.ibatis.annotations.Insert;
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Options;
-import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.*;
+
+import java.util.List;
 
 @Mapper
 public interface UserMapper {
@@ -24,4 +24,18 @@ public interface UserMapper {
 
     @Select("SELECT * FROM user WHERE phone = #{phone}")
     User selectByPhone(String phone);
+
+    @Update("UPDATE user SET status = #{status} WHERE id = #{id}")
+    int updateUserStatus(@Param("id") Long id, @Param("status") Integer status);
+
+    @Select("SELECT * FROM user WHERE id = #{id}")
+    User selectById(Long id);
+
+    @Select("<script>" +
+            "SELECT * FROM user WHERE 1=1 " +
+            "<if test='role != null'> AND role = #{role} </if>" +
+            "<if test='status != null'> AND status = #{status} </if>" +
+            "ORDER BY id DESC" +
+            "</script>")
+    List<User> selectUserList(@Param("role") String role, @Param("status") Integer status);
 }

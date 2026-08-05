@@ -2,7 +2,6 @@ package com.dzy.userservice.service.impl;
 
 import com.dzy.common.entity.User;
 import com.dzy.common.exception.BusinessException;
-import com.dzy.userservice.dto.AuditMerchantRequest;
 import com.dzy.userservice.dto.MerchantApplyRequest;
 import com.dzy.userservice.dto.MerchantReapplyRequest;
 import com.dzy.common.entity.Merchant;
@@ -10,11 +9,9 @@ import com.dzy.userservice.mapper.MerchantMapper;
 import com.dzy.userservice.mapper.UserMapper;
 import com.dzy.userservice.service.MerchantRegistrationService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -99,63 +96,6 @@ public class MerchantRegistrationServiceImpl implements MerchantRegistrationServ
         merchantMapper.update(merchant);
     }
 
-    /**
-     * 管理员查询待审核列表
-     */
-    public List<Merchant> getPendingList() {
-        return merchantMapper.selectPendingList();
-    }
-
-    /**
-     * 管理员审核
-     */
-    @Transactional
-    public void audit(AuditMerchantRequest request) {
-        Merchant merchant = merchantMapper.selectById(request.getMerchantId());
-        if (merchant == null) {
-            throw new BusinessException("申请记录不存在");
-        }
-        if (!"PENDING".equals(merchant.getStatus())) {
-            throw new BusinessException("该申请已被处理，请刷新列表");
-        }
-
-        if (request.getApproved()) {
-            // ----- 审核通过 -----
-            // 1. 再次检查手机号是否已被注册（防止管理员操作期间被注册）
-            if (userMapper.selectByPhone(merchant.getPhone()) != null) {
-                throw new BusinessException("该手机号已被注册，无法创建商家账号");
-            }
-
-            // 2. 生成初始密码（6位随机数字）
-            String rawPassword = String.valueOf((int)((Math.random() * 9 + 1) * 100000));
-            String encodedPassword = BCrypt.hashpw(rawPassword, BCrypt.gensalt());
-
-            // 3. 创建用户
-            User user = new User();
-            user.setUsername(merchant.getPhone());
-            user.setPasswordHash(encodedPassword);
-            user.setPhone(merchant.getPhone());
-            user.setRole("MERCHANT");
-            user.setStatus(1);
-            userMapper.addUser(user);
-
-            // 4. 更新商家记录
-            merchant.setUserId(user.getId());
-            merchant.setStatus("APPROVED");
-            merchant.setAuditRemark(null);
-            merchantMapper.updateAudit(merchant);
-            
-
-        } else {
-            // ----- 审核驳回 -----
-            if (request.getRemark() == null || request.getRemark().trim().isEmpty()) {
-                throw new BusinessException("驳回时必须填写驳回原因");
-            }
-            merchant.setStatus("REJECTED");
-            merchant.setAuditRemark(request.getRemark());
-            merchantMapper.updateAudit(merchant);
-        }
-    }
 
     /**
      * 根据用户ID查询已审核通过的商家信息（供后续门店管理等使用）
