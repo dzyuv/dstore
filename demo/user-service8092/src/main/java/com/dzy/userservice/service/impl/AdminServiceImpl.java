@@ -35,7 +35,8 @@ public class AdminServiceImpl implements AdminService {
 
     // ========== 商家审核 ==========
 
-    public List<Merchant> getPendingMerchants() {
+    public List<Merchant> getPendingMerchants(Long adminId) {
+        checkAdmin(adminId);
         return merchantMapper.selectMerchantList("PENDING");
     }
 
@@ -91,7 +92,8 @@ public class AdminServiceImpl implements AdminService {
 
     // ========== 商家管控 ==========
 
-    public List<Merchant> getMerchantList(String status) {
+    public List<Merchant> getMerchantList(Long adminId,String status) {
+        checkAdmin(adminId);
         return merchantMapper.selectMerchantList(status);
     }
 
@@ -136,7 +138,8 @@ public class AdminServiceImpl implements AdminService {
 
     // ========== 用户管理 ==========
 
-    public List<User> getUserList(String role, Integer status) {
+    public List<User> getUserList(Long adminId,String role, Integer status) {
+        checkAdmin(adminId);
         return userMapper.selectUserList(role, status);
     }
 

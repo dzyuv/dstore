@@ -21,10 +21,9 @@ public class AdminController {
     @Autowired
     private AdminService adminService;
 
-    // ---------- 商家审核 ----------
     @GetMapping("/merchants/pending")
     public ResultJSON getPendingMerchants(@RequestHeader(Constants.HEADER_USER_ID) Long adminId) {
-        List<Merchant> list = adminService.getPendingMerchants();
+        List<Merchant> list = adminService.getPendingMerchants(adminId);
         return ResultJSON.success(list);
     }
 
@@ -37,13 +36,10 @@ public class AdminController {
 
     // ---------- 商家管控 ----------
     @GetMapping("/merchants")
-    public ResultJSON getMerchants(@RequestHeader(Constants.HEADER_USER_ID) Long adminId,
-                                                   @RequestParam(required = false) String status) {
-        // 管理员身份校验在 service 中执行
-        List<Merchant> list = adminService.getMerchantList(status);
+    public ResultJSON getMerchants(@RequestHeader(Constants.HEADER_USER_ID) Long adminId, @RequestParam(required = false) String status) {
+        List<Merchant> list = adminService.getMerchantList(adminId, status);
         return ResultJSON.success(list);
     }
-
     @PutMapping("/merchants/status")
     public ResultJSON updateMerchantStatus(@RequestHeader(Constants.HEADER_USER_ID) Long adminId,
                                                  @Valid @RequestBody UpdateMerchantStatusRequest request) {
@@ -54,9 +50,9 @@ public class AdminController {
     // ---------- 用户管理 ----------
     @GetMapping("/users")
     public ResultJSON getUsers(@RequestHeader(Constants.HEADER_USER_ID) Long adminId,
-                                           @RequestParam(required = false) String role,
-                                           @RequestParam(required = false) Integer status) {
-        List<User> list = adminService.getUserList(role, status);
+                               @RequestParam(required = false) String role,
+                               @RequestParam(required = false) Integer status) {
+        List<User> list = adminService.getUserList(adminId, role, status);
         return ResultJSON.success(list);
     }
 

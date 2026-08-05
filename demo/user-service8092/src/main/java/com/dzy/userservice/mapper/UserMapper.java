@@ -1,6 +1,5 @@
 package com.dzy.userservice.mapper;
 
-import com.dzy.common.entity.Merchant;
 import com.dzy.common.entity.User;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
