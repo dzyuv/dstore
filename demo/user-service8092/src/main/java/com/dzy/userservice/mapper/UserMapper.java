@@ -21,4 +21,7 @@ public interface UserMapper {
             "VALUES(#{username}, #{passwordHash}, #{phone}, #{role}, 1, NOW(), NOW())")
     @Options(useGeneratedKeys = true, keyProperty = "id")
     void addUser(User user);
+
+    @Select("SELECT * FROM user WHERE phone = #{phone}")
+    User selectByPhone(String phone);
 }

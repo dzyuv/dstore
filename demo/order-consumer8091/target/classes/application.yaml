@@ -5,9 +5,6 @@ spring:
     openfeign:
       circuitbreaker:
         enabled: true
-    sentinel:
-      transport:
-        dashboard: localhost:8080
 server:
   port: 8091
 eureka:

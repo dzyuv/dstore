@@ -13,6 +13,7 @@ public class Merchant {
     private String idCard;
     private String businessLicense;      // 营业执照图片URL
     private String bankAccount;          // JSON格式存储多个银行账户
+    private String phone;                // 联系手机号（也是登录账号）
     private String status;               // PENDING / APPROVED / REJECTED / DISABLED
     private String auditRemark;          // 审核备注
 }

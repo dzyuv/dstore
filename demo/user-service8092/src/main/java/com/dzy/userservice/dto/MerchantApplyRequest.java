@@ -5,7 +5,7 @@ import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 
 @Data
-public class MerchantRequest {
+public class MerchantApplyRequest {
 
     @NotBlank(message = "公司名称不能为空")
     private String companyName;
