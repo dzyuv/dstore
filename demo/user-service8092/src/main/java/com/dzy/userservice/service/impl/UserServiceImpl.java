@@ -30,6 +30,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User register(RegisterRequest request) {
+        String role = request.getRole();
+        if (role != null && !"CUSTOMER".equals(role)) {
+            throw new BusinessException("只支持普通用户注册，商家请通过入驻申请");
+        }
         if(userMapper.countByPhone(request.getPhone()) != 0){
             throw new BusinessException("该手机已被注册");
         }
