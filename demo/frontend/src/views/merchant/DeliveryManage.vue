@@ -24,7 +24,7 @@
           <template #default="{ row }">
             <el-button link type="primary" @click="openDetail(row)">查看详情</el-button>
             <el-button
-              v-if="['WAIT_PICK', 'PICKING'].includes(row.status)"
+              v-if="['WAIT_PICK', 'PICKING'].includes(row.delivery?.status)"
               link
               type="primary"
               @click="updateDelivery(row, 'PICKING')"
@@ -32,7 +32,7 @@
               拣货完成
             </el-button>
             <el-button
-              v-if="['PICKING', 'PICKED'].includes(row.status)"
+              v-if="['PICKING', 'PICKED'].includes(row.delivery?.status)"
               link
               type="primary"
               @click="updateDelivery(row, 'DELIVERING')"
@@ -40,7 +40,7 @@
               配送中
             </el-button>
             <el-button
-              v-if="row.status === 'DELIVERING'"
+              v-if="row.delivery?.status === 'DELIVERING'"
               link
               type="primary"
               @click="updateDelivery(row, 'DELIVERED')"
@@ -88,7 +88,7 @@
 
 <script setup>
 import { onMounted, reactive, ref } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { getMerchantOrders, updateDeliveryStatus } from '@/api/order'
 
 const list = ref([])

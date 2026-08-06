@@ -1,7 +1,9 @@
 package com.dzy.goodsprovider8090.service.impl;
 
 import com.dzy.common.constants.Constants;
+import com.dzy.common.entity.ResultJSON;
 import com.dzy.common.exception.BusinessException;
+import com.dzy.goodsprovider8090.client.UserClient;
 import com.dzy.goodsprovider8090.dto.CartAddRequest;
 import com.dzy.goodsprovider8090.dto.CartUpdateRequest;
 import com.dzy.goodsprovider8090.entity.CartItem;
@@ -32,6 +34,8 @@ public class CartServiceImpl implements CartService {
     private ProductSkuMapper skuMapper;
     @Autowired
     private ProductMapper productMapper;
+    @Autowired
+    private UserClient userClient;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -44,6 +48,16 @@ public class CartServiceImpl implements CartService {
         Product product = productMapper.selectById(sku.getProductId());
         if (product == null || !Constants.PRODUCT_ON_SALE.equals(product.getStatus())) {
             throw new BusinessException("商品未上架");
+        }
+        // 检查门店是否营业
+        ResultJSON storeResp = userClient.getStore(product.getStoreId());
+        if (storeResp != null && storeResp.isSuccess() && storeResp.getData() != null) {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> storeData = (Map<String, Object>) storeResp.getData();
+            Object statusObj = storeData.get("status");
+            if (statusObj != null && Integer.parseInt(statusObj.toString()) == 0) {
+                throw new BusinessException("门店已休息，无法加购");
+            }
         }
         int available = safe(sku.getPhysicalStock()) - safe(sku.getLockedStock());
         if (available < 1) {
@@ -130,6 +144,8 @@ public class CartServiceImpl implements CartService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void selectByStore(Long userId, Long storeId, boolean selected) {
+        // 先取消其他门店的选中，保证同一时间只选一个门店
+        cartItemMapper.updateSelectedAll(userId, false);
         cartItemMapper.updateSelectedByStore(userId, storeId, selected);
     }
 

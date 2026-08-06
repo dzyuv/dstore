@@ -192,6 +192,13 @@ public class GoodsController {
         return ResultJSON.success();
     }
 
+    /** 门店休息时自动下架全部在售商品 */
+    @PostMapping("/internal/offline-by-store")
+    public ResultJSON offlineByStore(@RequestParam Long storeId) {
+        productService.offlineByStore(storeId);
+        return ResultJSON.success();
+    }
+
     @PostMapping("/stock/lock")
     public ResultJSON lockStock(@Valid @RequestBody StockChangeRequest request) {
         stockService.lock(request);
@@ -217,15 +224,15 @@ public class GoodsController {
     }
 
     private void requireMerchant(String role) {
-        if (role != null
-                && !Constants.ROLE_MERCHANT.equals(role)
-                && !Constants.ROLE_ADMIN.equals(role)) {
+        if (role == null
+                || (!Constants.ROLE_MERCHANT.equals(role)
+                && !Constants.ROLE_ADMIN.equals(role))) {
             throw new BusinessException("仅商家可操作");
         }
     }
 
     private void requireAdmin(String role) {
-        if (role != null && !Constants.ROLE_ADMIN.equals(role)) {
+        if (!Constants.ROLE_ADMIN.equals(role)) {
             throw new BusinessException("仅管理员可操作");
         }
     }

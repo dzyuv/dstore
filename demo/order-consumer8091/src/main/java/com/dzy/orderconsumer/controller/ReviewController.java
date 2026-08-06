@@ -57,7 +57,7 @@ public class ReviewController {
             return ResultJSON.error(400, "该商品不属于此订单");
         }
 
-        Long skuId = body.get("skuId") == null ? 0L : Long.valueOf(body.get("skuId").toString());
+        Long skuId = body.get("skuId") == null ? 0L : Long.parseLong(body.get("skuId").toString());
         String content = body.get("content") == null ? null : body.get("content").toString();
         String images = body.get("images") == null ? null : body.get("images").toString();
 
@@ -105,7 +105,7 @@ public class ReviewController {
     @PutMapping("/{id}/hide")
     public ResultJSON hide(@RequestHeader(value = Constants.HEADER_ROLE, required = false) String role,
                            @PathVariable Long id) {
-        if (role != null && !Constants.ROLE_ADMIN.equals(role)) {
+        if (role == null || !Constants.ROLE_ADMIN.equals(role)) {
             return ResultJSON.error(403, "仅管理员可屏蔽评价");
         }
         reviewMapper.updateStatus(id, Constants.REVIEW_HIDDEN);

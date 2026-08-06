@@ -57,36 +57,35 @@ public class OrderTimeoutJob {
 
     private void cancelOne(Order order) {
         String orderNo = order.getOrderNo();
-        // 先用条件更新抢占取消权，避免与支付回调并发：若已支付则 rows=0
+
+        // 先尝试释放锁定库存，成功后再取消订单
+        List<OrderItem> items = orderItemMapper.selectByOrderNo(orderNo);
+        if (items != null && !items.isEmpty()) {
+            List<Map<String, Object>> stockItems = new ArrayList<>();
+            for (OrderItem oi : items) {
+                Map<String, Object> m = new HashMap<>();
+                m.put("skuId", oi.getSkuId());
+                m.put("quantity", oi.getQuantity());
+                stockItems.add(m);
+            }
+
+            Map<String, Object> stockBody = new HashMap<>();
+            stockBody.put("bizNo", orderNo);
+            stockBody.put("items", stockItems);
+
+            ResultJSON unlock = goodsClient.unlockStock(stockBody);
+            if (unlock == null || !unlock.isSuccess()) {
+                log.error("订单 {} 释放锁定库存失败，暂不取消订单", orderNo);
+                return;
+            }
+        }
+
         int rows = orderMapper.cancelIfPendingPay(orderNo, "超时未支付自动取消");
         if (rows == 0) {
+            log.info("订单 {} 状态已变更，跳过超时取消", orderNo);
             return;
         }
 
-        List<OrderItem> items = orderItemMapper.selectByOrderNo(orderNo);
-        if (items == null || items.isEmpty()) {
-            log.info("订单超时已取消（无明细）: {}", orderNo);
-            return;
-        }
-
-        List<Map<String, Object>> stockItems = new ArrayList<>();
-        for (OrderItem oi : items) {
-            Map<String, Object> m = new HashMap<>();
-            m.put("skuId", oi.getSkuId());
-            m.put("quantity", oi.getQuantity());
-            stockItems.add(m);
-        }
-        Map<String, Object> stockBody = new HashMap<>();
-        stockBody.put("bizNo", orderNo);
-        stockBody.put("items", stockItems);
-
-        ResultJSON unlock = goodsClient.unlockStock(stockBody);
-        if (unlock == null || !unlock.isSuccess()) {
-            // 订单已取消但库存未释放：记录告警，可人工/补偿任务处理
-            log.error("订单 {} 已超时取消，但释放锁定库存失败: {}",
-                    orderNo, unlock == null ? "服务不可用" : unlock.getMsg());
-            return;
-        }
         log.info("订单超时已取消并释放库存: {}", orderNo);
     }
 }

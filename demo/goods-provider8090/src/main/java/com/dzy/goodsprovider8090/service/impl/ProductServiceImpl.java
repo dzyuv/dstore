@@ -201,6 +201,12 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    public void offlineByStore(Long storeId) {
+        productMapper.offlineByStore(storeId);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
     public void delete(Long userId, Long productId) {
         Long merchantId = requireMerchantId(userId);
         Product product = requireMerchantProduct(productId, merchantId);

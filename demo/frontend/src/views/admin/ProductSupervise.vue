@@ -44,9 +44,8 @@
             <el-tag size="small" :type="statusType(row.status)">{{ statusText(row.status) }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="160" fixed="right">
+        <el-table-column label="操作" width="100" fixed="right">
           <template #default="{ row }">
-            <el-button link type="primary" @click="$router.push(`/goods/${row.id}`)">查看</el-button>
             <el-button
               link
               type="danger"

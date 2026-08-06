@@ -25,10 +25,9 @@ public class UserController {
 
     @PostMapping("/sms/send")
     public ResultJSON sendSms(@Valid @RequestBody SendSmsRequest request) {
-        String code = smsService.sendCode(request.getPhone(),
+        smsService.sendCode(request.getPhone(),
                 request.getScene() == null ? "REGISTER" : request.getScene());
-        // 演示环境返回验证码；生产环境应移除
-        return ResultJSON.success(Map.of("message", "验证码已发送", "demoCode", code));
+        return ResultJSON.success(Map.of("message", "验证码已发送"));
     }
 
     @PostMapping("/login")

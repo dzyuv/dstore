@@ -58,7 +58,7 @@ public class CategoryController {
     }
 
     private void requireAdmin(String role) {
-        if (role != null && !Constants.ROLE_ADMIN.equals(role)) {
+        if (role == null || !Constants.ROLE_ADMIN.equals(role)) {
             throw new BusinessException("仅管理员可操作分类");
         }
     }

@@ -10,6 +10,8 @@ import com.dzy.orderconsumer.entity.Payment;
 import com.dzy.orderconsumer.mapper.OrderItemMapper;
 import com.dzy.orderconsumer.mapper.OrderMapper;
 import com.dzy.orderconsumer.mapper.PaymentMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,6 +20,8 @@ import java.util.*;
 @RestController
 @RequestMapping("/payments")
 public class PaymentController {
+
+    private static final Logger log = LoggerFactory.getLogger(PaymentController.class);
 
     @Autowired
     private PaymentMapper paymentMapper;
@@ -71,29 +75,49 @@ public class PaymentController {
             return ResultJSON.error(404, "支付单不存在");
         }
         if (Constants.PAY_SUCCESS.equals(payment.getStatus())) {
-            return ResultJSON.success("已支付");
+            return ResultJSON.success(Map.of("orderNo", payment.getOrderNo(), "status", "PAID"));
         }
         if (!success) {
             paymentMapper.updateStatus(paymentNo, Constants.PAY_FAILED, null);
             return ResultJSON.error(400, "支付失败");
         }
 
-        List<OrderItem> items = orderItemMapper.selectByOrderNo(payment.getOrderNo());
-        List<Map<String, Object>> stockItems = new ArrayList<>();
-        for (OrderItem oi : items) {
-            Map<String, Object> m = new HashMap<>();
-            m.put("skuId", oi.getSkuId());
-            m.put("quantity", oi.getQuantity());
-            stockItems.add(m);
-        }
-        ResultJSON deduct = goodsClient.deductStock(Map.of("bizNo", payment.getOrderNo(), "items", stockItems));
-        if (deduct == null || !deduct.isSuccess()) {
-            throw new BusinessException(deduct == null ? "扣库存失败" : deduct.getMsg());
+        // 幂等：已支付则直接返回
+        if (Constants.PAY_SUCCESS.equals(payment.getStatus())) {
+            return ResultJSON.success(Map.of("orderNo", payment.getOrderNo(), "status", "PAID"));
         }
 
-        paymentMapper.updateStatus(paymentNo, Constants.PAY_SUCCESS, "MOCK-" + System.currentTimeMillis());
-        orderMapper.updateStatus(payment.getOrderNo(), Constants.ORDER_PAID, null);
-        return ResultJSON.success(Map.of("orderNo", payment.getOrderNo(), "status", "PAID"));
+        try {
+            // 先扣库存，成功后原子标记支付（避免先标记后扣库存失败导致库存无法扣减）
+            List<OrderItem> items = orderItemMapper.selectByOrderNo(payment.getOrderNo());
+            List<Map<String, Object>> stockItems = new ArrayList<>();
+            for (OrderItem oi : items) {
+                Map<String, Object> m = new HashMap<>();
+                m.put("skuId", oi.getSkuId());
+                m.put("quantity", oi.getQuantity());
+                stockItems.add(m);
+            }
+            ResultJSON deduct = goodsClient.deductStock(Map.of("bizNo", payment.getOrderNo(), "items", stockItems));
+            if (deduct == null || !deduct.isSuccess()) {
+                throw new BusinessException(deduct == null ? "扣库存失败" : deduct.getMsg());
+            }
+
+            // 库存扣减成功后原子标记支付
+            int marked = paymentMapper.markPaidIfPending(paymentNo, "MOCK-" + System.currentTimeMillis());
+            if (marked == 0) {
+                // 并发：另一请求也完成了扣库存并标记支付，回滚本次多余扣减
+                goodsClient.restoreStock(Map.of("bizNo", payment.getOrderNo() + "-ROLLBACK", "items", stockItems));
+                log.warn("支付单 {} 已被并发处理，已回滚多余扣库存", paymentNo);
+                return ResultJSON.success(Map.of("orderNo", payment.getOrderNo(), "status", "PAID"));
+            }
+
+            orderMapper.updateStatus(payment.getOrderNo(), Constants.ORDER_PAID, null);
+            return ResultJSON.success(Map.of("orderNo", payment.getOrderNo(), "status", "PAID"));
+        } catch (Exception e) {
+            log.error("支付回调处理失败 paymentNo={}: {}", paymentNo, e.getMessage());
+            throw e instanceof BusinessException ? (BusinessException) e
+                    : new BusinessException("支付处理失败: " + e.getMessage());
+        }
     }
 
     @PostMapping("/refund")

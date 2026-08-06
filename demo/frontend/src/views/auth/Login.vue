@@ -45,7 +45,8 @@ async function onSubmit() {
   try {
     await userStore.login(form)
     ElMessage.success('登录成功')
-    router.replace(route.query.redirect || '/')
+    const fallback = userStore.isAdmin ? '/admin/merchants' : userStore.isMerchant ? '/merchant/products' : '/'
+    router.replace(route.query.redirect || fallback)
   } finally {
     loading.value = false
   }

@@ -37,6 +37,8 @@ public interface ProductService {
 
     void offlineByMerchant(Long merchantId);
 
+    void offlineByStore(Long storeId);
+
     void delete(Long userId, Long productId);
 
     ProductSku addSku(Long userId, Long productId, SkuRequest request);

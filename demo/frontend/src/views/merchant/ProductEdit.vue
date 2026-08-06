@@ -59,7 +59,7 @@
 
         <template v-if="!isEdit">
           <el-divider content-position="left">规格 SKU（至少一个）</el-divider>
-          <div v-for="(sku, idx) in form.skus" :key="idx" class="sku-editor">
+          <div v-for="(sku, idx) in form.skus" :key="sku._uid" class="sku-editor">
             <el-row :gutter="12">
               <el-col :span="6">
                 <el-form-item
@@ -76,18 +76,16 @@
                   :prop="`skus.${idx}.price`"
                   :rules="priceRule"
                 >
-                  <el-input-number
-                    v-model="sku.price"
-                    :min="0.01"
-                    :precision="2"
-                    :step="1"
-                    style="width: 100%"
-                  />
+                  <el-input v-model="sku.price" placeholder="0.00" style="width: 100%" />
                 </el-form-item>
               </el-col>
               <el-col :span="5">
-                <el-form-item :label="idx === 0 ? '库存' : ''">
-                  <el-input-number v-model="sku.stock" :min="0" style="width: 100%" />
+                <el-form-item
+                  :label="idx === 0 ? '库存' : ''"
+                  :prop="`skus.${idx}.stock`"
+                  :rules="stockRule"
+                >
+                  <el-input v-model="sku.stock" placeholder="0" style="width: 100%" />
                 </el-form-item>
               </el-col>
               <el-col :span="5">
@@ -166,7 +164,7 @@
           <el-input v-model="skuDialog.form.skuName" />
         </el-form-item>
         <el-form-item label="售价">
-          <el-input-number v-model="skuDialog.form.price" :min="0.01" :precision="2" style="width: 100%" />
+          <el-input v-model="skuDialog.form.price" placeholder="0.00" style="width: 100%" />
         </el-form-item>
         <el-form-item label="初始库存" v-if="!skuDialog.form.id">
           <el-input-number v-model="skuDialog.form.stock" :min="0" style="width: 100%" />
@@ -194,7 +192,7 @@
     <el-dialog v-model="stockDialog.visible" title="调整物理库存" width="420px" destroy-on-close>
       <p class="text-muted">正数增加，负数减少；调整后物理库存不能低于锁定库存。</p>
       <p>当前规格：{{ stockDialog.skuName }}</p>
-      <el-input-number v-model="stockDialog.changeQty" style="width: 100%" />
+      <el-input v-model="stockDialog.changeQty" placeholder="输入调整数量，正数增加，负数减少" style="width: 100%" />
       <el-input v-model="stockDialog.remark" placeholder="备注（可选）" style="margin-top: 12px" />
       <template #footer>
         <el-button @click="stockDialog.visible = false">取消</el-button>
@@ -220,8 +218,6 @@ import {
 import { getCategoryTree } from '@/api/category'
 import { listStores } from '@/api/merchant'
 
-const MSG_DURATION = 5000 // 成功提示 5 秒
-
 const route = useRoute()
 const router = useRouter()
 const isEdit = computed(() => {
@@ -238,6 +234,11 @@ const categories = ref([])
 const skuList = ref([])
 const productStatus = ref('')
 
+let _skuUid = 1
+function newSkuRow() {
+  return { _uid: _skuUid++, skuName: '', price: 1, stock: 10, barcode: '' }
+}
+
 const form = reactive({
   storeId: null,
   categoryId: null,
@@ -245,7 +246,7 @@ const form = reactive({
   mainImage: '',
   detail: '',
   onSale: true,
-  skus: [{ skuName: '', price: 1, stock: 10, barcode: '' }]
+  skus: [newSkuRow()]
 })
 
 const rules = {
@@ -259,6 +260,18 @@ const priceRule = [
   {
     validator: (_r, v, cb) => {
       if (v == null || Number(v) < 0.01) cb(new Error('售价须大于 0'))
+      else cb()
+    },
+    trigger: 'blur'
+  }
+]
+const stockRule = [
+  { required: true, message: '库存必填', trigger: 'blur' },
+  {
+    validator: (_r, v, cb) => {
+      if (v === '' || v == null) { cb(new Error('库存必填')); return }
+      const n = Number(v)
+      if (!Number.isInteger(n) || n < 0) cb(new Error('库存须为非负整数'))
       else cb()
     },
     trigger: 'blur'
@@ -280,7 +293,7 @@ const stockDialog = reactive({
 })
 
 function toastSuccess(message) {
-  ElMessage({ type: 'success', message, duration: MSG_DURATION })
+  ElMessage.success(message)
 }
 
 function formatPrice(v) {
@@ -293,7 +306,7 @@ function statusType(s) {
   return { ON_SALE: 'success', OFF_SALE: 'info', PLATFORM_OFF: 'danger' }[s] || 'info'
 }
 function addSkuRow() {
-  form.skus.push({ skuName: '', price: 1, stock: 10, barcode: '' })
+  form.skus.push(newSkuRow())
 }
 
 async function loadMeta() {
@@ -332,9 +345,16 @@ async function onSave() {
       ElMessage.warning('至少需要一个规格')
       return
     }
-    const bad = form.skus.find((s) => !s.skuName || !s.skuName.trim() || s.price == null || Number(s.price) < 0.01)
+    const bad = form.skus.find((s) => {
+      if (!s.skuName || !s.skuName.trim()) return true
+      const price = Number(s.price)
+      if (s.price === '' || s.price == null || isNaN(price) || price < 0.01) return true
+      const stock = Number(s.stock)
+      if (s.stock === '' || s.stock == null || !Number.isInteger(stock) || stock < 0) return true
+      return false
+    })
     if (bad) {
-      ElMessage.warning('请完整填写每个规格的名称和售价')
+      ElMessage.warning('请完整填写每个规格的名称、售价和库存')
       return
     }
   }
@@ -451,15 +471,16 @@ function openStockDialog(row) {
 }
 
 async function saveStock() {
-  if (!stockDialog.changeQty) {
-    ElMessage.warning('调整数量不能为 0')
+  const qty = Number(stockDialog.changeQty)
+  if (!qty || !Number.isInteger(qty)) {
+    ElMessage.warning('请输入非零整数')
     return
   }
   stockDialog.saving = true
   try {
     await adjustStock({
       skuId: stockDialog.skuId,
-      changeQty: stockDialog.changeQty,
+      changeQty: qty,
       remark: stockDialog.remark
     })
     toastSuccess('库存已调整')

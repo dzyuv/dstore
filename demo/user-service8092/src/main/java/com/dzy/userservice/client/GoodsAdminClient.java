@@ -11,4 +11,7 @@ public interface GoodsAdminClient {
 
     @PostMapping("/goods/internal/offline-by-merchant")
     ResultJSON offlineByMerchant(@RequestParam("merchantId") Long merchantId);
+
+    @PostMapping("/goods/internal/offline-by-store")
+    ResultJSON offlineByStore(@RequestParam("storeId") Long storeId);
 }

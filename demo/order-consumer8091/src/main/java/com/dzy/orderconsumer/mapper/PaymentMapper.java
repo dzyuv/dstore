@@ -17,8 +17,10 @@ public interface PaymentMapper {
     @Update("UPDATE payment SET status = #{status}, third_trade_no = #{thirdTradeNo}, paid_at = NOW() WHERE payment_no = #{paymentNo}")
     int updateStatus(@Param("paymentNo") String paymentNo, @Param("status") String status, @Param("thirdTradeNo") String thirdTradeNo);
 
-    @Select("SELECT * FROM payment WHERE order_no = #{orderNo} ORDER BY id DESC LIMIT 1")
-    Payment selectLatestByOrderNo(String orderNo);
+    @Update("UPDATE payment SET status = 'SUCCESS', third_trade_no = #{thirdTradeNo}, paid_at = NOW() " +
+            "WHERE payment_no = #{paymentNo} AND status = 'PENDING'")
+    int markPaidIfPending(@Param("paymentNo") String paymentNo, @Param("thirdTradeNo") String thirdTradeNo);
+
 
     @Update("UPDATE payment SET status = #{status}, updated_at = NOW() WHERE order_no = #{orderNo} AND status = 'SUCCESS'")
     int markRefundedByOrderNo(@Param("orderNo") String orderNo, @Param("status") String status);

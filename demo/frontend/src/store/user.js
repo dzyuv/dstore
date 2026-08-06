@@ -10,7 +10,7 @@ export const useUserStore = defineStore('user', () => {
   const role = computed(() => user.value?.role || '')
   const isMerchant = computed(() => role.value === 'MERCHANT')
   const isAdmin = computed(() => role.value === 'ADMIN')
-  const isCustomer = computed(() => role.value === 'CUSTOMER' || (!role.value && isLogin.value))
+  const isCustomer = computed(() => role.value === 'CUSTOMER' || !role.value)
 
   function setAuth(t, u) {
     token.value = t || ''

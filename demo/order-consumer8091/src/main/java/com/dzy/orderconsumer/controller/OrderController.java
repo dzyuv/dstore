@@ -5,11 +5,6 @@ import com.dzy.common.entity.ResultJSON;
 import com.dzy.common.exception.BusinessException;
 import com.dzy.orderconsumer.client.GoodsClient;
 import com.dzy.orderconsumer.client.UserClient;
-import com.dzy.common.entity.ResultJSON;
-import com.dzy.common.entity.User;
-import com.dzy.orderconsumer.client.UserClient;
-import com.dzy.common.entity.ResultJSON;
-import com.dzy.common.entity.User;
 import com.dzy.orderconsumer.entity.Delivery;
 import com.dzy.orderconsumer.entity.Order;
 import com.dzy.orderconsumer.entity.OrderItem;
@@ -36,9 +31,10 @@ public class OrderController {
     private GoodsClient goodsClient;
     @Autowired
     private UserClient userClient;
-
     @Autowired
-    private UserClient userClient;
+    private DeliveryMapper deliveryMapper;
+    @Autowired
+    private ObjectMapper objectMapper;
 
     private Long requireMerchantId(Long userId) {
         ResultJSON resp = userClient.getMerchantByUser(userId);
@@ -52,6 +48,19 @@ public class OrderController {
             throw new BusinessException("商家信息不完整");
         }
         return Long.valueOf(idObj.toString());
+    }
+
+    /** 用户订单列表 */
+    @GetMapping
+    public ResultJSON list(@RequestHeader(Constants.HEADER_USER_ID) Long userId) {
+        return ResultJSON.success(orderMapper.selectByUserId(userId));
+    }
+
+    /** 商家订单列表 */
+    @GetMapping("/merchant")
+    public ResultJSON merchantOrders(@RequestHeader(Constants.HEADER_USER_ID) Long userId) {
+        Long merchantId = requireMerchantId(userId);
+        return ResultJSON.success(orderMapper.selectByMerchant(merchantId));
     }
 
     /**
@@ -71,6 +80,17 @@ public class OrderController {
         List<Map<String, Object>> items = (List<Map<String, Object>>) body.get("items");
         if (items == null || items.isEmpty()) {
             throw new BusinessException("订单商品不能为空");
+        }
+
+        // 校验门店营业状态
+        ResultJSON storeResp = userClient.getStore(storeId);
+        if (storeResp != null && storeResp.isSuccess() && storeResp.getData() != null) {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> storeData = objectMapper.convertValue(storeResp.getData(), Map.class);
+            Object statusObj = storeData.get("status");
+            if (statusObj != null && Integer.parseInt(statusObj.toString()) == 0) {
+                throw new BusinessException("门店已休息，暂时无法下单");
+            }
         }
 
         String orderNo = "O" + System.currentTimeMillis()
@@ -105,13 +125,19 @@ public class OrderController {
                 throw new BusinessException("商品已下架: " + product.get("name"));
             }
 
+            // 校验商品归属门店与下单门店一致
+            if (product != null && product.get("storeId") != null
+                    && !storeId.equals(Long.valueOf(product.get("storeId").toString()))) {
+                throw new BusinessException("商品不属于该门店，请按门店分别下单");
+            }
+
             BigDecimal price = new BigDecimal(sku.get("price").toString());
             BigDecimal amount = price.multiply(BigDecimal.valueOf(qty));
             total = total.add(amount);
 
             OrderItem oi = new OrderItem();
             oi.setOrderNo(orderNo);
-            oi.setProductId(product == null ? 0L : Long.valueOf(product.get("id").toString()));
+            oi.setProductId(product == null ? 0L : Long.parseLong(product.get("id").toString()));
             oi.setSkuId(skuId);
             oi.setProductName(product == null ? "商品" : String.valueOf(product.get("name")));
             oi.setSkuName(String.valueOf(sku.get("skuName")));
@@ -179,12 +205,6 @@ public class OrderController {
         }
     }
 
-    @GetMapping("/merchant")
-    public ResultJSON merchantList(@RequestHeader(Constants.HEADER_USER_ID) Long userId) {
-        Long merchantId = requireMerchantId(userId); // will add UserClient
-        return ResultJSON.success(orderMapper.selectByMerchant(merchantId));
-    }
-
     @PutMapping("/merchant/{orderNo}/delivery")
     public ResultJSON updateMerchantDelivery(@RequestHeader(Constants.HEADER_USER_ID) Long userId,
                                              @PathVariable String orderNo,
@@ -196,7 +216,8 @@ public class OrderController {
         }
 
         Delivery delivery = deliveryMapper.selectByOrderNo(orderNo);
-        if (delivery == null) {
+        boolean isNew = delivery == null;
+        if (isNew) {
             delivery = new Delivery();
             delivery.setOrderNo(orderNo);
             delivery.setStoreId(order.getStoreId());
@@ -207,7 +228,11 @@ public class OrderController {
         if (body.get("status") != null) delivery.setStatus(body.get("status"));
         if (body.get("remark") != null) delivery.setRemark(body.get("remark"));
 
-        deliveryMapper.update(delivery);
+        if (isNew) {
+            deliveryMapper.insert(delivery);
+        } else {
+            deliveryMapper.update(delivery);
+        }
 
         // 同步订单状态
         String st = delivery.getStatus();

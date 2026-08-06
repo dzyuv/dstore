@@ -10,4 +10,7 @@ public interface UserClient {
 
     @GetMapping("/users/internal/merchant/by-user/{userId}")
     ResultJSON getMerchantByUser(@PathVariable("userId") Long userId);
+
+    @GetMapping("/users/internal/store/{storeId}")
+    ResultJSON getStore(@PathVariable("storeId") Long storeId);
 }

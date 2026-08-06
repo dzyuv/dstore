@@ -49,7 +49,6 @@
                       :value="addr.id"
                     />
                   </el-select>
-                  <el-button @click="$router.push('/address')">管理地址</el-button>
                 </div>
               </el-form-item>
               <el-form-item label="配送时间">

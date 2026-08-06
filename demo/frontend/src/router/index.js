@@ -38,6 +38,12 @@ const routes = [
         meta: { public: true, title: '商家入驻' }
       },
       {
+        path: 'addresses',
+        name: 'AddressList',
+        component: () => import('@/views/user/AddressList.vue'),
+        meta: { title: '收货地址', roles: ['CUSTOMER'] }
+      },
+      {
         path: 'cart',
         name: 'Cart',
         component: () => import('@/views/goods/Cart.vue'),
@@ -66,6 +72,12 @@ const routes = [
         name: 'MerchantProductCreate',
         component: () => import('@/views/merchant/ProductEdit.vue'),
         meta: { title: '发布商品', roles: ['MERCHANT', 'ADMIN'] }
+      },
+      {
+        path: 'merchant/products/:id',
+        name: 'MerchantProductEdit',
+        component: () => import('@/views/merchant/ProductEdit.vue'),
+        meta: { title: '编辑商品', roles: ['MERCHANT', 'ADMIN'] }
       },
       {
         path: 'merchant/delivery',

@@ -4,8 +4,6 @@
       <div class="flex-between" style="margin-bottom: 16px">
         <h2 style="margin: 0">我的购物车</h2>
         <div>
-          <el-button @click="toggleSelectAll(true)">全选</el-button>
-          <el-button @click="toggleSelectAll(false)">取消全选</el-button>
           <el-button type="danger" plain :disabled="!selectedIds.length" @click="onBatchDelete">
             删除选中
           </el-button>
@@ -83,7 +81,6 @@ import {
   deleteCartBatch,
   deleteCartItem,
   getCart,
-  selectAllCart,
   selectStoreCart,
   updateCartItem
 } from '@/api/cart'
@@ -141,10 +138,6 @@ async function onChangeQty(item, quantity) {
 }
 async function onSelectStore(storeId, selected) {
   await selectStoreCart(storeId, !!selected)
-  await load()
-}
-async function toggleSelectAll(selected) {
-  await selectAllCart(selected)
   await load()
 }
 async function onDelete(item) {

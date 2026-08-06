@@ -7,18 +7,14 @@
           <span>DStore 商城</span>
         </div>
         <el-menu mode="horizontal" :ellipsis="false" :default-active="activeMenu" router class="nav">
-          <el-menu-item index="/">商品首页</el-menu-item>
-          <el-menu-item index="/cart">购物车</el-menu-item>
-          <el-menu-item v-if="userStore.isLogin" index="/orders">我的订单</el-menu-item>
-          <el-menu-item v-if="userStore.isLogin" index="/address">地址管理</el-menu-item>
-          <!-- 商家入驻：未成为商家时始终可见 -->
-          <el-menu-item v-if="!userStore.isMerchant" index="/merchant/apply">商家入驻</el-menu-item>
-          <el-menu-item v-if="userStore.isMerchant || userStore.isAdmin" index="/merchant/products">
-            商家商品
-          </el-menu-item>
-          <el-menu-item v-if="userStore.isMerchant" index="/merchant/delivery">
-            配送管理
-          </el-menu-item>
+          <el-menu-item v-if="userStore.isCustomer" index="/">商品首页</el-menu-item>
+          <el-menu-item v-if="userStore.isCustomer" index="/cart">购物车</el-menu-item>
+          <el-menu-item v-if="userStore.isCustomer" index="/orders">我的订单</el-menu-item>
+          <el-menu-item v-if="userStore.isCustomer" index="/addresses">地址管理</el-menu-item>
+          <el-menu-item v-if="userStore.isCustomer" index="/merchant/apply">商家入驻</el-menu-item>
+          <el-menu-item v-if="userStore.isMerchant" index="/merchant/stores">门店管理</el-menu-item>
+          <el-menu-item v-if="userStore.isMerchant" index="/merchant/products">商家商品</el-menu-item>
+          <el-menu-item v-if="userStore.isMerchant" index="/merchant/delivery">配送管理</el-menu-item>
           <el-menu-item v-if="userStore.isAdmin" index="/admin/merchants">商家管理</el-menu-item>
           <el-menu-item v-if="userStore.isAdmin" index="/admin/users">用户管理</el-menu-item>
           <el-menu-item v-if="userStore.isAdmin" index="/admin/categories">分类管理</el-menu-item>
@@ -59,13 +55,15 @@ const activeMenu = computed(() => {
   if (p.startsWith('/merchant/apply')) return '/merchant/apply'
   if (p.startsWith('/merchant/products')) return '/merchant/products'
   if (p.startsWith('/merchant/stores')) return '/merchant/stores'
+  if (p.startsWith('/merchant/delivery')) return '/merchant/delivery'
   if (p.startsWith('/admin/merchants')) return '/admin/merchants'
   if (p.startsWith('/admin/users')) return '/admin/users'
   if (p.startsWith('/admin/categories')) return '/admin/categories'
   if (p.startsWith('/admin/products')) return '/admin/products'
   if (p.startsWith('/admin/logs')) return '/admin/logs'
+  if (p.startsWith('/admin')) return '/admin/merchants'
   if (p.startsWith('/orders')) return p.startsWith('/orders/checkout') ? '/cart' : '/orders'
-  if (p.startsWith('/address')) return '/address'
+  if (p.startsWith('/addresses')) return '/addresses'
   if (p.startsWith('/cart')) return '/cart'
   if (p.startsWith('/goods')) return '/'
   return p
@@ -129,6 +127,7 @@ onMounted(() => {
   align-items: center;
   gap: 10px;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 .username {
   font-size: 14px;

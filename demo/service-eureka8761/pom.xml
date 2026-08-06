@@ -9,7 +9,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <groupId>demo</groupId>
+    <groupId>com.dzy</groupId>
     <artifactId>service-eureka8761</artifactId>
     <name>service_eureka8761</name>
     <description>Eureka 服务注册中心</description>

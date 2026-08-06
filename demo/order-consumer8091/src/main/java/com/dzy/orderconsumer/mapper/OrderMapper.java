@@ -19,13 +19,10 @@ public interface OrderMapper {
     Order selectByOrderNo(String orderNo);
 
     @Select("SELECT * FROM orders WHERE user_id = #{userId} ORDER BY id DESC")
-    List<Order> selectByUser(Long userId);
+    List<Order> selectByUserId(Long userId);
 
     @Select("SELECT * FROM orders WHERE merchant_id = #{merchantId} ORDER BY id DESC")
     List<Order> selectByMerchant(Long merchantId);
-
-    @Update("UPDATE orders SET status = #{status}, cancel_reason = #{cancelReason} WHERE order_no = #{orderNo}")
-    int updateStatus(@Param("orderNo") String orderNo, @Param("status") String status, @Param("cancelReason") String cancelReason);
 
     @Update("UPDATE orders SET status = #{status}, cancel_reason = #{cancelReason} WHERE order_no = #{orderNo}")
     int updateStatus(@Param("orderNo") String orderNo, @Param("status") String status, @Param("cancelReason") String cancelReason);
@@ -35,7 +32,7 @@ public interface OrderMapper {
     List<Order> selectExpiredPending();
 
     /** 仅当仍为待支付时取消，避免与支付回调并发冲突 */
-    @Update("UPDATE orders SET status = 'CANCELLED', cancel_reason = #{cancelReason} " +
+    @Update("UPDATE orders SET status = 'CANCELLED', cancel_reason = #{reason} " +
             "WHERE order_no = #{orderNo} AND status = 'PENDING_PAY'")
-    int cancelIfPendingPay(@Param("orderNo") String orderNo, @Param("cancelReason") String cancelReason);
+    int cancelIfPendingPay(@Param("orderNo") String orderNo, @Param("reason") String reason);
 }
