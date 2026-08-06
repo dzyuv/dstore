@@ -22,6 +22,8 @@
       <div class="footer">
         已有账号？
         <router-link to="/login">去登录</router-link>
+        <span style="margin: 0 6px; color: #c0c4cc">|</span>
+        <router-link to="/merchant/apply">商家入驻</router-link>
       </div>
     </el-card>
   </div>

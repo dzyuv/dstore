@@ -16,6 +16,7 @@ public class CartGroupVO {
     public static class CartItemVO {
         private Long cartItemId;
         private Long storeId;
+        private Long merchantId;   // 新增 - 用于下单
         private Long productId;
         private Long skuId;
         private String productName;

@@ -9,9 +9,17 @@
         <el-menu mode="horizontal" :ellipsis="false" :default-active="activeMenu" router class="nav">
           <el-menu-item index="/">商品首页</el-menu-item>
           <el-menu-item index="/cart">购物车</el-menu-item>
+          <el-menu-item v-if="userStore.isLogin" index="/orders">我的订单</el-menu-item>
+          <el-menu-item v-if="userStore.isLogin" index="/address">地址管理</el-menu-item>
+          <!-- 商家入驻：未成为商家时始终可见 -->
+          <el-menu-item v-if="!userStore.isMerchant" index="/merchant/apply">商家入驻</el-menu-item>
           <el-menu-item v-if="userStore.isMerchant || userStore.isAdmin" index="/merchant/products">
             商家商品
           </el-menu-item>
+          <el-menu-item v-if="userStore.isMerchant || userStore.isAdmin" index="/merchant/stores">
+            门店管理
+          </el-menu-item>
+          <el-menu-item v-if="userStore.isAdmin" index="/admin/merchants">商家审核</el-menu-item>
           <el-menu-item v-if="userStore.isAdmin" index="/admin/categories">分类管理</el-menu-item>
           <el-menu-item v-if="userStore.isAdmin" index="/admin/products">商品监管</el-menu-item>
         </el-menu>
@@ -24,6 +32,7 @@
           <template v-else>
             <el-button type="primary" link @click="$router.push('/login')">登录</el-button>
             <el-button link @click="$router.push('/register')">注册</el-button>
+            <el-button link type="warning" @click="$router.push('/merchant/apply')">商家入驻</el-button>
           </template>
         </div>
       </div>
@@ -45,9 +54,14 @@ const userStore = useUserStore()
 
 const activeMenu = computed(() => {
   const p = route.path
+  if (p.startsWith('/merchant/apply')) return '/merchant/apply'
   if (p.startsWith('/merchant/products')) return '/merchant/products'
+  if (p.startsWith('/merchant/stores')) return '/merchant/stores'
+  if (p.startsWith('/admin/merchants')) return '/admin/merchants'
   if (p.startsWith('/admin/categories')) return '/admin/categories'
   if (p.startsWith('/admin/products')) return '/admin/products'
+  if (p.startsWith('/orders')) return p.startsWith('/orders/checkout') ? '/cart' : '/orders'
+  if (p.startsWith('/address')) return '/address'
   if (p.startsWith('/cart')) return '/cart'
   if (p.startsWith('/goods')) return '/'
   return p

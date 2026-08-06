@@ -31,3 +31,8 @@ export function selectStoreCart(storeId, selected) {
 export function getSelectedCart() {
   return request.get('/cart/selected')
 }
+
+/** 下单成功后清除已选中项 */
+export function clearSelectedCart() {
+  return request.delete('/cart/selected')
+}

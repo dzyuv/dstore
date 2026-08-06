@@ -20,6 +20,7 @@ export function createStore(data) {
   return request.post('/merchant/stores', data)
 }
 
+/** 更新门店：body 需含 storeId */
 export function updateStore(data) {
   return request.put('/merchant/stores', data)
 }

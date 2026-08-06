@@ -4,9 +4,15 @@
 -- 默认管理员：admin / admin123
 -- ============================================================
 
+SET FOREIGN_KEY_CHECKS = 0;
+
 CREATE DATABASE IF NOT EXISTS user_db DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE DATABASE IF NOT EXISTS product_db DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE DATABASE IF NOT EXISTS order_db DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+SET FOREIGN_KEY_CHECKS = 1;
+
+SET FOREIGN_KEY_CHECKS = 1;
 
 -- -------------------- user_db --------------------
 USE user_db;
@@ -103,9 +109,9 @@ CREATE TABLE admin_operation_log (
     KEY idx_created (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 管理员 admin / admin123 （BCrypt）
+-- 管理员 admin / admin123
 INSERT INTO user (username, password_hash, phone, role, status)
-VALUES ('admin', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', '13800000000', 'ADMIN', 1);
+VALUES ('admin', '$2a$10$5r6R0Hn9asU5B7Qyq2aH9erxgn1wFunAJ5vfVZlWc7LxiFvOvrcwq', '13800000000', 'ADMIN', 1);
 
 -- -------------------- product_db --------------------
 USE product_db;

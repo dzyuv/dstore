@@ -3,13 +3,27 @@
     <div class="page-card" v-loading="pageLoading">
       <div class="flex-between" style="margin-bottom: 16px">
         <h2 style="margin: 0">{{ isEdit ? '编辑商品' : '发布商品' }}</h2>
-        <el-button @click="$router.back()">返回</el-button>
+        <el-button @click="$router.push('/merchant/products')">返回列表</el-button>
       </div>
+
+      <el-alert
+        v-if="!isEdit && !stores.length"
+        type="warning"
+        :closable="false"
+        show-icon
+        title="暂无门店，请先在「门店管理」中创建门店后再发布商品"
+        style="margin-bottom: 16px"
+      />
 
       <el-form ref="formRef" :model="form" :rules="rules" label-width="100px" style="max-width: 900px">
         <el-divider content-position="left">基本信息</el-divider>
         <el-form-item label="所属门店" prop="storeId" v-if="!isEdit">
-          <el-select v-model="form.storeId" placeholder="选择门店" style="width: 100%">
+          <el-select
+            v-model="form.storeId"
+            placeholder="请选择门店"
+            style="width: 100%"
+            :disabled="!stores.length"
+          >
             <el-option
               v-for="s in stores"
               :key="s.id"
@@ -25,18 +39,19 @@
             :props="{ label: 'name', value: 'id', children: 'children' }"
             check-strictly
             filterable
+            clearable
             style="width: 100%"
             placeholder="选择分类"
           />
         </el-form-item>
         <el-form-item label="商品名称" prop="name">
-          <el-input v-model="form.name" maxlength="64" show-word-limit />
+          <el-input v-model="form.name" maxlength="64" show-word-limit placeholder="商品名称" />
         </el-form-item>
-        <el-form-item label="主图 URL" prop="mainImage">
+        <el-form-item label="主图 URL">
           <el-input v-model="form.mainImage" placeholder="图片地址，可留空" />
         </el-form-item>
-        <el-form-item label="详情描述" prop="detail">
-          <el-input v-model="form.detail" type="textarea" :rows="4" />
+        <el-form-item label="详情描述">
+          <el-input v-model="form.detail" type="textarea" :rows="4" placeholder="商品详情" />
         </el-form-item>
         <el-form-item label="创建后上架" v-if="!isEdit">
           <el-switch v-model="form.onSale" />
@@ -47,13 +62,27 @@
           <div v-for="(sku, idx) in form.skus" :key="idx" class="sku-editor">
             <el-row :gutter="12">
               <el-col :span="6">
-                <el-form-item :label="idx === 0 ? '规格名' : ''" :prop="`skus.${idx}.skuName`" :rules="skuNameRule">
+                <el-form-item
+                  :label="idx === 0 ? '规格名' : ''"
+                  :prop="`skus.${idx}.skuName`"
+                  :rules="skuNameRule"
+                >
                   <el-input v-model="sku.skuName" placeholder="如 原味 500g" />
                 </el-form-item>
               </el-col>
               <el-col :span="5">
-                <el-form-item :label="idx === 0 ? '售价' : ''" :prop="`skus.${idx}.price`" :rules="priceRule">
-                  <el-input-number v-model="sku.price" :min="0.01" :precision="2" :step="1" style="width: 100%" />
+                <el-form-item
+                  :label="idx === 0 ? '售价' : ''"
+                  :prop="`skus.${idx}.price`"
+                  :rules="priceRule"
+                >
+                  <el-input-number
+                    v-model="sku.price"
+                    :min="0.01"
+                    :precision="2"
+                    :step="1"
+                    style="width: 100%"
+                  />
                 </el-form-item>
               </el-col>
               <el-col :span="5">
@@ -68,7 +97,12 @@
               </el-col>
               <el-col :span="3">
                 <el-form-item :label="idx === 0 ? ' ' : ''">
-                  <el-button type="danger" link :disabled="form.skus.length <= 1" @click="form.skus.splice(idx, 1)">
+                  <el-button
+                    type="danger"
+                    link
+                    :disabled="form.skus.length <= 1"
+                    @click="form.skus.splice(idx, 1)"
+                  >
                     删除
                   </el-button>
                 </el-form-item>
@@ -79,12 +113,14 @@
         </template>
 
         <el-form-item style="margin-top: 24px">
-          <el-button type="primary" :loading="saving" @click="onSave">保存</el-button>
-          <el-button @click="$router.back()">取消</el-button>
+          <el-button type="primary" :loading="saving" :disabled="!isEdit && !stores.length" @click="onSave">
+            保存
+          </el-button>
+          <el-button @click="$router.push('/merchant/products')">取消</el-button>
         </el-form-item>
       </el-form>
 
-      <!-- 编辑模式：SKU 管理 + 库存 -->
+      <!-- 编辑模式：SKU 与库存（不展示流水） -->
       <template v-if="isEdit && productId">
         <el-divider content-position="left">规格与库存管理</el-divider>
         <div class="flex-between" style="margin-bottom: 12px">
@@ -92,14 +128,14 @@
           <el-button type="primary" @click="openSkuDialog()">新增规格</el-button>
         </div>
         <el-table :data="skuList" stripe>
-          <el-table-column prop="skuName" label="规格" />
+          <el-table-column prop="skuName" label="规格" min-width="120" />
           <el-table-column label="售价" width="110">
             <template #default="{ row }">¥{{ formatPrice(row.price) }}</template>
           </el-table-column>
           <el-table-column prop="physicalStock" label="物理库存" width="100" />
           <el-table-column prop="lockedStock" label="锁定库存" width="100" />
           <el-table-column prop="availableStock" label="可用" width="90" />
-          <el-table-column prop="barcode" label="条码" />
+          <el-table-column prop="barcode" label="条码" min-width="100" />
           <el-table-column label="状态" width="90">
             <template #default="{ row }">
               <el-tag size="small" :type="row.status === 'ON' ? 'success' : 'info'">
@@ -107,11 +143,10 @@
               </el-tag>
             </template>
           </el-table-column>
-          <el-table-column label="操作" width="260" fixed="right">
+          <el-table-column label="操作" width="200" fixed="right">
             <template #default="{ row }">
               <el-button link type="primary" @click="openSkuDialog(row)">编辑</el-button>
               <el-button link type="warning" @click="openStockDialog(row)">调库存</el-button>
-              <el-button link @click="openLogs(row)">流水</el-button>
               <el-button link type="danger" @click="onDeleteSku(row)">删除</el-button>
             </template>
           </el-table-column>
@@ -120,7 +155,12 @@
     </div>
 
     <!-- SKU 弹窗 -->
-    <el-dialog v-model="skuDialog.visible" :title="skuDialog.form.id ? '编辑规格' : '新增规格'" width="480px">
+    <el-dialog
+      v-model="skuDialog.visible"
+      :title="skuDialog.form.id ? '编辑规格' : '新增规格'"
+      width="480px"
+      destroy-on-close
+    >
       <el-form :model="skuDialog.form" label-width="80px">
         <el-form-item label="规格名">
           <el-input v-model="skuDialog.form.skuName" />
@@ -151,7 +191,7 @@
     </el-dialog>
 
     <!-- 调库存 -->
-    <el-dialog v-model="stockDialog.visible" title="调整物理库存" width="420px">
+    <el-dialog v-model="stockDialog.visible" title="调整物理库存" width="420px" destroy-on-close>
       <p class="text-muted">正数增加，负数减少；调整后物理库存不能低于锁定库存。</p>
       <p>当前规格：{{ stockDialog.skuName }}</p>
       <el-input-number v-model="stockDialog.changeQty" style="width: 100%" />
@@ -161,25 +201,6 @@
         <el-button type="primary" :loading="stockDialog.saving" @click="saveStock">确定</el-button>
       </template>
     </el-dialog>
-
-    <!-- 流水 -->
-    <el-drawer v-model="logDrawer.visible" title="库存流水" size="480px">
-      <el-timeline>
-        <el-timeline-item
-          v-for="log in logDrawer.list"
-          :key="log.id"
-          :timestamp="log.createdAt || ''"
-          placement="top"
-        >
-          <div>
-            <el-tag size="small">{{ log.changeType }}</el-tag>
-            变动 {{ log.changeQty }}，物理={{ log.physicalAfter }}，锁定={{ log.lockedAfter }}
-          </div>
-          <div class="text-muted">{{ log.remark }} · {{ log.bizNo }}</div>
-        </el-timeline-item>
-      </el-timeline>
-      <el-empty v-if="!logDrawer.list.length" description="暂无流水" />
-    </el-drawer>
   </div>
 </template>
 
@@ -192,18 +213,22 @@ import {
   adjustStock,
   createGoods,
   deleteSku,
-  getStockLogs,
   merchantGoodsDetail,
   updateGoods,
   updateSku
 } from '@/api/goods'
 import { getCategoryTree } from '@/api/category'
-import { listStores } from '@/api/user'
+import { listStores } from '@/api/merchant'
+
+const MSG_DURATION = 5000 // 成功提示 5 秒
 
 const route = useRoute()
 const router = useRouter()
-const isEdit = computed(() => !!route.params.id)
-const productId = computed(() => (route.params.id ? Number(route.params.id) : null))
+const isEdit = computed(() => {
+  const id = route.params.id
+  return !!id && id !== 'create'
+})
+const productId = computed(() => (isEdit.value ? Number(route.params.id) : null))
 
 const formRef = ref()
 const pageLoading = ref(false)
@@ -219,8 +244,8 @@ const form = reactive({
   name: '',
   mainImage: '',
   detail: '',
-  onSale: false,
-  skus: [{ skuName: '', price: 1, stock: 0, barcode: '' }]
+  onSale: true,
+  skus: [{ skuName: '', price: 1, stock: 10, barcode: '' }]
 })
 
 const rules = {
@@ -229,7 +254,16 @@ const rules = {
   name: [{ required: true, message: '请输入商品名称', trigger: 'blur' }]
 }
 const skuNameRule = [{ required: true, message: '规格名必填', trigger: 'blur' }]
-const priceRule = [{ required: true, message: '售价必填', trigger: 'blur' }]
+const priceRule = [
+  { required: true, message: '售价必填', trigger: 'blur' },
+  {
+    validator: (_r, v, cb) => {
+      if (v == null || Number(v) < 0.01) cb(new Error('售价须大于 0'))
+      else cb()
+    },
+    trigger: 'blur'
+  }
+]
 
 const skuDialog = reactive({
   visible: false,
@@ -244,7 +278,10 @@ const stockDialog = reactive({
   changeQty: 0,
   remark: ''
 })
-const logDrawer = reactive({ visible: false, list: [] })
+
+function toastSuccess(message) {
+  ElMessage({ type: 'success', message, duration: MSG_DURATION })
+}
 
 function formatPrice(v) {
   return Number(v || 0).toFixed(2)
@@ -256,12 +293,12 @@ function statusType(s) {
   return { ON_SALE: 'success', OFF_SALE: 'info', PLATFORM_OFF: 'danger' }[s] || 'info'
 }
 function addSkuRow() {
-  form.skus.push({ skuName: '', price: 1, stock: 0, barcode: '' })
+  form.skus.push({ skuName: '', price: 1, stock: 10, barcode: '' })
 }
 
 async function loadMeta() {
   const [catRes, storeRes] = await Promise.all([
-    getCategoryTree(),
+    getCategoryTree().catch(() => ({ data: [] })),
     listStores().catch(() => ({ data: [] }))
   ])
   categories.value = catRes.data || []
@@ -276,12 +313,12 @@ async function loadDetail() {
   pageLoading.value = true
   try {
     const res = await merchantGoodsDetail(productId.value)
-    const p = res.data?.product || {}
+    const p = res.data?.product || res.data || {}
     form.categoryId = p.categoryId
-    form.name = p.name
-    form.mainImage = p.mainImage
-    form.detail = p.detail
-    productStatus.value = p.status
+    form.name = p.name || ''
+    form.mainImage = p.mainImage || ''
+    form.detail = p.detail || ''
+    productStatus.value = p.status || ''
     skuList.value = res.data?.skus || []
   } finally {
     pageLoading.value = false
@@ -290,30 +327,54 @@ async function loadDetail() {
 
 async function onSave() {
   await formRef.value.validate()
+  if (!isEdit.value) {
+    if (!form.skus.length) {
+      ElMessage.warning('至少需要一个规格')
+      return
+    }
+    const bad = form.skus.find((s) => !s.skuName || !s.skuName.trim() || s.price == null || Number(s.price) < 0.01)
+    if (bad) {
+      ElMessage.warning('请完整填写每个规格的名称和售价')
+      return
+    }
+  }
+
   saving.value = true
   try {
     if (isEdit.value) {
       await updateGoods({
         productId: productId.value,
         categoryId: form.categoryId,
-        name: form.name,
-        mainImage: form.mainImage,
-        detail: form.detail
+        name: form.name.trim(),
+        mainImage: form.mainImage || null,
+        detail: form.detail || null
       })
-      ElMessage.success('商品信息已更新')
+      toastSuccess('商品信息已更新')
       await loadDetail()
     } else {
       const res = await createGoods({
         storeId: form.storeId,
         categoryId: form.categoryId,
-        name: form.name,
-        mainImage: form.mainImage,
-        detail: form.detail,
-        onSale: form.onSale,
-        skus: form.skus
+        name: form.name.trim(),
+        mainImage: form.mainImage || null,
+        detail: form.detail || null,
+        onSale: !!form.onSale,
+        skus: form.skus.map((s) => ({
+          skuName: s.skuName.trim(),
+          price: Number(s.price),
+          stock: s.stock == null ? 0 : Number(s.stock),
+          barcode: s.barcode || null,
+          status: 'ON'
+        }))
       })
-      ElMessage.success('商品创建成功')
-      router.replace(`/merchant/products/${res.data.id}`)
+      const newId = res.data?.id ?? res.data?.product?.id
+      toastSuccess('商品创建成功')
+      if (newId) {
+        await router.replace(`/merchant/products/${newId}`)
+        await loadDetail()
+      } else {
+        await router.push('/merchant/products')
+      }
     }
   } finally {
     saving.value = false
@@ -327,13 +388,19 @@ function openSkuDialog(row) {
       skuName: row.skuName,
       price: Number(row.price),
       stock: 0,
-      barcode: row.barcode,
-      image: row.image,
+      barcode: row.barcode || '',
+      image: row.image || '',
       status: row.status || 'ON'
     })
   } else {
     Object.assign(skuDialog.form, {
-      id: null, skuName: '', price: 1, stock: 0, barcode: '', image: '', status: 'ON'
+      id: null,
+      skuName: '',
+      price: 1,
+      stock: 10,
+      barcode: '',
+      image: '',
+      status: 'ON'
     })
   }
   skuDialog.visible = true
@@ -346,12 +413,21 @@ async function saveSku() {
   }
   skuDialog.saving = true
   try {
-    if (skuDialog.form.id) {
-      await updateSku(productId.value, skuDialog.form)
-    } else {
-      await addSku(productId.value, skuDialog.form)
+    const body = {
+      id: skuDialog.form.id,
+      skuName: skuDialog.form.skuName.trim(),
+      price: Number(skuDialog.form.price),
+      stock: Number(skuDialog.form.stock || 0),
+      barcode: skuDialog.form.barcode || null,
+      image: skuDialog.form.image || null,
+      status: skuDialog.form.status || 'ON'
     }
-    ElMessage.success('保存成功')
+    if (skuDialog.form.id) {
+      await updateSku(productId.value, body)
+    } else {
+      await addSku(productId.value, body)
+    }
+    toastSuccess('规格已保存')
     skuDialog.visible = false
     await loadDetail()
   } finally {
@@ -362,7 +438,7 @@ async function saveSku() {
 async function onDeleteSku(row) {
   await ElMessageBox.confirm('确认删除该规格？至少需保留一个规格。', '提示')
   await deleteSku(productId.value, row.id)
-  ElMessage.success('已删除')
+  toastSuccess('已删除')
   await loadDetail()
 }
 
@@ -386,18 +462,12 @@ async function saveStock() {
       changeQty: stockDialog.changeQty,
       remark: stockDialog.remark
     })
-    ElMessage.success('库存已调整')
+    toastSuccess('库存已调整')
     stockDialog.visible = false
     await loadDetail()
   } finally {
     stockDialog.saving = false
   }
-}
-
-async function openLogs(row) {
-  const res = await getStockLogs(row.id, 50)
-  logDrawer.list = res.data || []
-  logDrawer.visible = true
 }
 
 onMounted(async () => {

@@ -14,7 +14,9 @@
       <div class="footer">
         还没有账号？
         <router-link to="/register">去注册</router-link>
-        <span class="tip">演示管理员可用 admin / admin123（需数据库初始化成功）</span>
+        <span class="sep">|</span>
+        <router-link to="/merchant/apply">商家入驻</router-link>
+        <span class="tip">演示管理员可用 admin / admin123</span>
       </div>
     </el-card>
   </div>
@@ -77,6 +79,11 @@ h2 {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  align-items: center;
+}
+.sep {
+  margin: 0 6px;
+  color: #c0c4cc;
 }
 .tip {
   color: #909399;

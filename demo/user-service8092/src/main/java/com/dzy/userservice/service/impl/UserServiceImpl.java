@@ -30,10 +30,28 @@ public class UserServiceImpl implements UserService {
     @Override
     public Map<String, Object> login(LoginRequest request) {
         User user = userMapper.selectByUsername(request.getUsername());
-        if (user == null || user.getStatus() == 0
-                || !BCrypt.checkpw(request.getPassword(), user.getPasswordHash())) {
+        if (user == null || user.getStatus() == null || user.getStatus() == 0) {
+            log.warn("登录失败 - 用户不存在或状态已禁用: {}", request.getUsername());
             throw new BusinessException("用户名或密码错误");
         }
+
+        boolean passwordOk = false;
+        try {
+            String hash = user.getPasswordHash();
+            passwordOk = hash != null && !hash.isBlank()
+                    && BCrypt.checkpw(request.getPassword(), hash);
+        } catch (Exception e) {
+            log.error("登录时密码校验异常: {}", e.getMessage());
+            throw new BusinessException("账号密码数据异常，请联系管理员重置（演示可重启 user-service）");
+        }
+
+        if (!passwordOk) {
+            log.warn("登录失败 - 密码错误: {}", request.getUsername());
+            throw new BusinessException("用户名或密码错误");
+        }
+
+        log.info("登录成功: {}", request.getUsername());
+
         String token = jwtUtil.generateAccessToken(user.getId(), user.getUsername(), user.getRole());
         user.setPasswordHash(null);
 

@@ -67,8 +67,8 @@
           已选 <b>{{ totalSelectedCount }}</b> 件，合计
           <span class="price-lg">¥{{ formatPrice(totalSelectedAmount) }}</span>
         </div>
-        <el-button type="warning" size="large" disabled>
-          去结算（订单模块联调后开放）
+        <el-button type="warning" size="large" :disabled="!selectedIds.length" @click="goCheckout">
+          去结算
         </el-button>
       </div>
     </div>
@@ -77,6 +77,7 @@
 
 <script setup>
 import { computed, onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   deleteCartBatch,
@@ -86,6 +87,8 @@ import {
   selectStoreCart,
   updateCartItem
 } from '@/api/cart'
+
+const router = useRouter()
 
 const loading = ref(false)
 const groups = ref([])
@@ -155,6 +158,23 @@ async function onBatchDelete() {
   await deleteCartBatch(selectedIds.value)
   ElMessage.success('已删除')
   await load()
+}
+
+function goCheckout() {
+  if (!selectedIds.value.length) {
+    ElMessage.warning('请先选择要结算的商品')
+    return
+  }
+  // 按门店分组结算：若选中多门店，提示一次只结算一个门店
+  const storeIds = new Set(
+    groups.value
+      .flatMap((g) => g.items.filter((i) => i.selected && !i.invalid).map((i) => i.storeId))
+  )
+  if (storeIds.size > 1) {
+    ElMessage.warning('一次只能结算同一个门店的商品，请取消其他门店勾选')
+    return
+  }
+  router.push('/orders/checkout')
 }
 
 onMounted(load)

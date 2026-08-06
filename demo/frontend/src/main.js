@@ -17,5 +17,9 @@ for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
 
 app.use(createPinia())
 app.use(router)
-app.use(ElementPlus, { locale: zhCn })
+// 全局消息默认展示 5 秒
+app.use(ElementPlus, {
+  locale: zhCn,
+  message: { duration: 5000 }
+})
 app.mount('#app')

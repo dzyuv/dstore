@@ -28,11 +28,11 @@ request.interceptors.response.use(
       if (res.code === 401) {
         const userStore = useUserStore()
         userStore.logout()
-        ElMessage.error(res.msg || '请先登录')
+        ElMessage({ type: 'error', message: res.msg || '请先登录', duration: 5000 })
         router.push({ path: '/login', query: { redirect: router.currentRoute.value.fullPath } })
         return Promise.reject(res)
       }
-      ElMessage.error(res.msg || '请求失败')
+      ElMessage({ type: 'error', message: res.msg || '请求失败', duration: 5000 })
       return Promise.reject(res)
     }
     return res
@@ -43,10 +43,10 @@ request.interceptors.response.use(
     if (status === 401) {
       const userStore = useUserStore()
       userStore.logout()
-      ElMessage.error(data?.msg || '请先登录')
+      ElMessage({ type: 'error', message: data?.msg || '请先登录', duration: 5000 })
       router.push({ path: '/login' })
     } else {
-      ElMessage.error(data?.msg || error.message || '网络异常')
+      ElMessage({ type: 'error', message: data?.msg || error.message || '网络异常', duration: 5000 })
     }
     return Promise.reject(error)
   }

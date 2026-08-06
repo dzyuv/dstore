@@ -27,6 +27,9 @@ public interface UserMapper {
     @Update("UPDATE user SET status = #{status} WHERE id = #{id}")
     int updateUserStatus(@Param("id") Long id, @Param("status") Integer status);
 
+    @Update("UPDATE user SET password_hash = #{passwordHash}, updated_at = NOW() WHERE id = #{id}")
+    int updatePassword(@Param("id") Long id, @Param("passwordHash") String passwordHash);
+
     @Select("SELECT * FROM user WHERE id = #{id}")
     User selectById(Long id);
 
