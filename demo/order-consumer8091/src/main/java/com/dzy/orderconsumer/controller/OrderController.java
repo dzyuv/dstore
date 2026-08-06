@@ -4,6 +4,12 @@ import com.dzy.common.constants.Constants;
 import com.dzy.common.entity.ResultJSON;
 import com.dzy.common.exception.BusinessException;
 import com.dzy.orderconsumer.client.GoodsClient;
+import com.dzy.orderconsumer.client.UserClient;
+import com.dzy.common.entity.ResultJSON;
+import com.dzy.common.entity.User;
+import com.dzy.orderconsumer.client.UserClient;
+import com.dzy.common.entity.ResultJSON;
+import com.dzy.common.entity.User;
 import com.dzy.orderconsumer.entity.Delivery;
 import com.dzy.orderconsumer.entity.Order;
 import com.dzy.orderconsumer.entity.OrderItem;
@@ -27,11 +33,26 @@ public class OrderController {
     @Autowired
     private OrderItemMapper orderItemMapper;
     @Autowired
-    private DeliveryMapper deliveryMapper;
-    @Autowired
     private GoodsClient goodsClient;
+    @Autowired
+    private UserClient userClient;
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    @Autowired
+    private UserClient userClient;
+
+    private Long requireMerchantId(Long userId) {
+        ResultJSON resp = userClient.getMerchantByUser(userId);
+        if (resp == null || !resp.isSuccess() || resp.getData() == null) {
+            throw new BusinessException("商家身份校验失败");
+        }
+        @SuppressWarnings("unchecked")
+        Map<String, Object> data = objectMapper.convertValue(resp.getData(), Map.class);
+        Object idObj = data.get("id");
+        if (idObj == null) {
+            throw new BusinessException("商家信息不完整");
+        }
+        return Long.valueOf(idObj.toString());
+    }
 
     /**
      * 下单：校验库存并锁定 → 生成订单 → 待支付
@@ -158,9 +179,49 @@ public class OrderController {
         }
     }
 
-    @GetMapping
-    public ResultJSON list(@RequestHeader(Constants.HEADER_USER_ID) Long userId) {
-        return ResultJSON.success(orderMapper.selectByUser(userId));
+    @GetMapping("/merchant")
+    public ResultJSON merchantList(@RequestHeader(Constants.HEADER_USER_ID) Long userId) {
+        Long merchantId = requireMerchantId(userId); // will add UserClient
+        return ResultJSON.success(orderMapper.selectByMerchant(merchantId));
+    }
+
+    @PutMapping("/merchant/{orderNo}/delivery")
+    public ResultJSON updateMerchantDelivery(@RequestHeader(Constants.HEADER_USER_ID) Long userId,
+                                             @PathVariable String orderNo,
+                                             @RequestBody Map<String, String> body) {
+        Long merchantId = requireMerchantId(userId);
+        Order order = orderMapper.selectByOrderNo(orderNo);
+        if (order == null || !merchantId.equals(order.getMerchantId())) {
+            return ResultJSON.error(404, "订单不存在或不属于当前商家");
+        }
+
+        Delivery delivery = deliveryMapper.selectByOrderNo(orderNo);
+        if (delivery == null) {
+            delivery = new Delivery();
+            delivery.setOrderNo(orderNo);
+            delivery.setStoreId(order.getStoreId());
+        }
+
+        if (body.get("carrier") != null) delivery.setCarrier(body.get("carrier"));
+        if (body.get("trackingNo") != null) delivery.setTrackingNo(body.get("trackingNo"));
+        if (body.get("status") != null) delivery.setStatus(body.get("status"));
+        if (body.get("remark") != null) delivery.setRemark(body.get("remark"));
+
+        deliveryMapper.update(delivery);
+
+        // 同步订单状态
+        String st = delivery.getStatus();
+        if (Constants.DELIVERY_PICKING.equals(st)) {
+            orderMapper.updateStatus(orderNo, Constants.ORDER_PICKING, null);
+        } else if (Constants.DELIVERY_PICKED.equals(st)) {
+            orderMapper.updateStatus(orderNo, Constants.ORDER_PICKED, null);
+        } else if (Constants.DELIVERY_DELIVERING.equals(st)) {
+            orderMapper.updateStatus(orderNo, Constants.ORDER_DELIVERING, null);
+        } else if (Constants.DELIVERY_DELIVERED.equals(st)) {
+            orderMapper.updateStatus(orderNo, Constants.ORDER_DELIVERED, null);
+        }
+
+        return ResultJSON.success(delivery);
     }
 
     @GetMapping("/{orderNo}")

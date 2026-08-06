@@ -16,12 +16,14 @@
           <el-menu-item v-if="userStore.isMerchant || userStore.isAdmin" index="/merchant/products">
             商家商品
           </el-menu-item>
-          <el-menu-item v-if="userStore.isMerchant || userStore.isAdmin" index="/merchant/stores">
-            门店管理
+          <el-menu-item v-if="userStore.isMerchant" index="/merchant/delivery">
+            配送管理
           </el-menu-item>
-          <el-menu-item v-if="userStore.isAdmin" index="/admin/merchants">商家审核</el-menu-item>
+          <el-menu-item v-if="userStore.isAdmin" index="/admin/merchants">商家管理</el-menu-item>
+          <el-menu-item v-if="userStore.isAdmin" index="/admin/users">用户管理</el-menu-item>
           <el-menu-item v-if="userStore.isAdmin" index="/admin/categories">分类管理</el-menu-item>
           <el-menu-item v-if="userStore.isAdmin" index="/admin/products">商品监管</el-menu-item>
+          <el-menu-item v-if="userStore.isAdmin" index="/admin/logs">操作日志</el-menu-item>
         </el-menu>
         <div class="user-area">
           <template v-if="userStore.isLogin">
@@ -58,8 +60,10 @@ const activeMenu = computed(() => {
   if (p.startsWith('/merchant/products')) return '/merchant/products'
   if (p.startsWith('/merchant/stores')) return '/merchant/stores'
   if (p.startsWith('/admin/merchants')) return '/admin/merchants'
+  if (p.startsWith('/admin/users')) return '/admin/users'
   if (p.startsWith('/admin/categories')) return '/admin/categories'
   if (p.startsWith('/admin/products')) return '/admin/products'
+  if (p.startsWith('/admin/logs')) return '/admin/logs'
   if (p.startsWith('/orders')) return p.startsWith('/orders/checkout') ? '/cart' : '/orders'
   if (p.startsWith('/address')) return '/address'
   if (p.startsWith('/cart')) return '/cart'

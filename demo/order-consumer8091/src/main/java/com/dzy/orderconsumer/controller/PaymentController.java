@@ -118,7 +118,11 @@ public class PaymentController {
             m.put("quantity", oi.getQuantity());
             stockItems.add(m);
         }
-        goodsClient.restoreStock(Map.of("bizNo", orderNo, "items", stockItems));
+        ResultJSON restore = goodsClient.restoreStock(Map.of("bizNo", orderNo, "items", stockItems));
+        if (restore == null || !restore.isSuccess()) {
+            throw new BusinessException(restore == null ? "恢复库存失败" : restore.getMsg());
+        }
+        paymentMapper.markRefundedByOrderNo(orderNo, Constants.PAY_REFUNDED);
         orderMapper.updateStatus(orderNo, Constants.ORDER_REFUNDED, "商家退款");
         return ResultJSON.success();
     }

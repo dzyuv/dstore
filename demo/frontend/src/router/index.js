@@ -44,12 +44,6 @@ const routes = [
         meta: { title: '购物车', roles: ['CUSTOMER', 'MERCHANT', 'ADMIN'] }
       },
       {
-        path: 'address',
-        name: 'AddressList',
-        component: () => import('@/views/user/AddressList.vue'),
-        meta: { title: '地址管理', roles: ['CUSTOMER', 'MERCHANT', 'ADMIN'] }
-      },
-      {
         path: 'orders',
         name: 'OrderList',
         component: () => import('@/views/order/OrderList.vue'),
@@ -74,10 +68,10 @@ const routes = [
         meta: { title: '发布商品', roles: ['MERCHANT', 'ADMIN'] }
       },
       {
-        path: 'merchant/products/:id',
-        name: 'MerchantProductEdit',
-        component: () => import('@/views/merchant/ProductEdit.vue'),
-        meta: { title: '编辑商品', roles: ['MERCHANT', 'ADMIN'] }
+        path: 'merchant/delivery',
+        name: 'MerchantDelivery',
+        component: () => import('@/views/merchant/DeliveryManage.vue'),
+        meta: { title: '配送管理', roles: ['MERCHANT'] }
       },
       {
         path: 'merchant/stores',
@@ -101,7 +95,19 @@ const routes = [
         path: 'admin/merchants',
         name: 'AdminMerchants',
         component: () => import('@/views/admin/MerchantAudit.vue'),
-        meta: { title: '商家审核', roles: ['ADMIN'] }
+        meta: { title: '商家管理', roles: ['ADMIN'] }
+      },
+      {
+        path: 'admin/users',
+        name: 'AdminUsers',
+        component: () => import('@/views/admin/UserManage.vue'),
+        meta: { title: '用户管理', roles: ['ADMIN'] }
+      },
+      {
+        path: 'admin/logs',
+        name: 'AdminLogs',
+        component: () => import('@/views/admin/OperationLog.vue'),
+        meta: { title: '操作日志', roles: ['ADMIN'] }
       }
     ]
   }

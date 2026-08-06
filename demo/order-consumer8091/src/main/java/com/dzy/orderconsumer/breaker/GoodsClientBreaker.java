@@ -15,21 +15,6 @@ public class GoodsClientBreaker implements GoodsClient {
     }
 
     @Override
-    public ResultJSON getById(Long gid) {
-        return ResultJSON.error(503, "商品服务不可用");
-    }
-
-    @Override
-    public ResultJSON list(int page, int size) {
-        return ResultJSON.error(503, "商品服务不可用");
-    }
-
-    @Override
-    public ResultJSON reduceStock(Map<String, Object> param) {
-        return ResultJSON.error(503, "库存服务不可用");
-    }
-
-    @Override
     public ResultJSON lockStock(Map<String, Object> body) {
         return ResultJSON.error(503, "库存锁定失败，商品服务不可用");
     }

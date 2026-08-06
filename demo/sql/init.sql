@@ -12,8 +12,6 @@ CREATE DATABASE IF NOT EXISTS order_db DEFAULT CHARACTER SET utf8mb4 COLLATE utf
 
 SET FOREIGN_KEY_CHECKS = 1;
 
-SET FOREIGN_KEY_CHECKS = 1;
-
 -- -------------------- user_db --------------------
 USE user_db;
 

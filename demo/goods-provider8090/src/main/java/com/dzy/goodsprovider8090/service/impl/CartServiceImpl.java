@@ -152,7 +152,7 @@ public class CartServiceImpl implements CartService {
         CartGroupVO.CartItemVO row = new CartGroupVO.CartItemVO();
         row.setCartItemId(item.getId());
         row.setStoreId(item.getStoreId());
-        row.setMerchantId(product != null ? product.getMerchantId() : null); // 新增
+        row.setMerchantId(product != null ? product.getMerchantId() : null);
         row.setProductId(item.getProductId());
         row.setSkuId(item.getSkuId());
         row.setQuantity(item.getQuantity());

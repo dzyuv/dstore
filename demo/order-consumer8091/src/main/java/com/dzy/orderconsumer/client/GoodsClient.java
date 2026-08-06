@@ -13,15 +13,6 @@ public interface GoodsClient {
     @GetMapping("/goods/sku/{skuId}")
     ResultJSON getSku(@PathVariable("skuId") Long skuId);
 
-    @GetMapping("/goods/get/{gid}")
-    ResultJSON getById(@PathVariable("gid") Long gid);
-
-    @GetMapping("/goods/list")
-    ResultJSON list(@RequestParam("page") int page, @RequestParam("size") int size);
-
-    @PostMapping("/goods/reduceStock")
-    ResultJSON reduceStock(@RequestBody Map<String, Object> param);
-
     @PostMapping("/goods/stock/lock")
     ResultJSON lockStock(@RequestBody Map<String, Object> body);
 

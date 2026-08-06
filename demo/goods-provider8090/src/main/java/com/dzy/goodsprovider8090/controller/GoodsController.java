@@ -35,12 +35,6 @@ public class GoodsController {
         return ResultJSON.success(productService.detail(productId, true));
     }
 
-    /** 兼容旧接口 */
-    @GetMapping("/get/{gid}")
-    public ResultJSON getById(@PathVariable Long gid) {
-        return detail(gid);
-    }
-
     /** 上架商品搜索：名称模糊 + 分类筛选，按上架时间倒序 */
     @GetMapping({"/list", "/search"})
     public ResultJSON search(@RequestParam(required = false) String keyword,
@@ -219,21 +213,6 @@ public class GoodsController {
     @PostMapping("/stock/restore")
     public ResultJSON restoreStock(@Valid @RequestBody StockChangeRequest request) {
         stockService.restore(request);
-        return ResultJSON.success();
-    }
-
-    /** 兼容旧 Feign：reduceStock ≈ lock 单条 */
-    @PostMapping("/reduceStock")
-    public ResultJSON reduceStock(@RequestBody java.util.Map<String, Object> param) {
-        StockChangeRequest req = new StockChangeRequest();
-        req.setBizNo(param.get("bizNo") == null
-                ? "LEGACY-" + System.currentTimeMillis()
-                : param.get("bizNo").toString());
-        StockChangeRequest.Item item = new StockChangeRequest.Item();
-        item.setSkuId(Long.valueOf(param.get("skuId").toString()));
-        item.setQuantity(Integer.parseInt(param.get("qty").toString()));
-        req.setItems(java.util.List.of(item));
-        stockService.lock(req);
         return ResultJSON.success();
     }
 

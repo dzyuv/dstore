@@ -34,7 +34,6 @@ public class AuthFilter implements GlobalFilter, Ordered {
             "/goods/search",
             "/goods/detail/**",
             "/goods/list",
-            "/goods/get/**",
             "/goods/sku/**",
             "/categories/tree",
             "/categories/*",

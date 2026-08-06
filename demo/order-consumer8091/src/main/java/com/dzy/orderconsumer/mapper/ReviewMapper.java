@@ -19,6 +19,13 @@ public interface ReviewMapper {
     @Select("SELECT * FROM review WHERE product_id = #{productId} AND status = 'VISIBLE' ORDER BY id DESC")
     List<Review> selectByProduct(Long productId);
 
+    @Select("SELECT * FROM review WHERE order_no = #{orderNo} AND product_id = #{productId} LIMIT 1")
+    Review selectByOrderAndProduct(@Param("orderNo") String orderNo, @Param("productId") Long productId);
+
+    @Update("UPDATE review SET score = #{score}, content = #{content}, images = #{images}, " +
+            "sku_id = #{skuId}, status = #{status}, updated_at = NOW() WHERE id = #{id}")
+    int update(Review review);
+
     @Update("UPDATE review SET status = #{status} WHERE id = #{id}")
     int updateStatus(@Param("id") Long id, @Param("status") String status);
 }
