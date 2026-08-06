@@ -1,0 +1,1 @@
+import{D as t}from"./index-DXp0tymA.js";function o(){return t.get("/categories/tree")}function n(){return t.get("/categories/admin/tree")}function g(e){return t.post("/categories",e)}function u(e,r){return t.put(`/categories/${e}`,r)}function i(e){return t.delete(`/categories/${e}`)}export{n as a,g as c,i as d,o as g,u};
