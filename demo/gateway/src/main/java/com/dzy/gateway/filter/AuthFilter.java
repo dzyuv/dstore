@@ -30,6 +30,7 @@ public class AuthFilter implements GlobalFilter, Ordered {
             "/users/login",
             "/users/sms/send",
             "/users",
+            "/users/password/reset",
             "/merchant/apply",
             "/goods/search",
             "/goods/detail/**",

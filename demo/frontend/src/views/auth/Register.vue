@@ -17,6 +17,9 @@
         <el-form-item label="密码" prop="password">
           <el-input v-model="form.password" type="password" show-password placeholder="6-30 位密码" />
         </el-form-item>
+        <el-form-item label="重复密码" prop="confirmPassword">
+          <el-input v-model="form.confirmPassword" type="password" show-password placeholder="请再次输入密码" />
+        </el-form-item>
         <el-button type="primary" class="full" :loading="loading" @click="onSubmit">注册</el-button>
       </el-form>
       <div class="footer">
@@ -39,7 +42,16 @@ const router = useRouter()
 const formRef = ref()
 const loading = ref(false)
 const countdown = ref(0)
-const form = reactive({ phone: '', smsCode: '', password: '', role: 'CUSTOMER' })
+const form = reactive({ phone: '', smsCode: '', password: '', confirmPassword: '', role: 'CUSTOMER' })
+const validateConfirmPassword = (_rule, value, callback) => {
+  if (value === '') {
+    callback(new Error('请再次输入密码'))
+  } else if (value !== form.password) {
+    callback(new Error('两次输入的密码不一致'))
+  } else {
+    callback()
+  }
+}
 const rules = {
   phone: [
     { required: true, message: '请输入手机号', trigger: 'blur' },
@@ -49,6 +61,9 @@ const rules = {
   password: [
     { required: true, message: '请输入密码', trigger: 'blur' },
     { min: 6, max: 30, message: '密码长度 6-30 位', trigger: 'blur' }
+  ],
+  confirmPassword: [
+    { required: true, validator: validateConfirmPassword, trigger: 'blur' }
   ]
 }
 

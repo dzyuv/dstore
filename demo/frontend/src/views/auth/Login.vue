@@ -15,6 +15,8 @@
         还没有账号？
         <router-link to="/register">去注册</router-link>
         <span class="sep">|</span>
+        <router-link to="/forgot-password">忘记密码</router-link>
+        <span class="sep">|</span>
         <router-link to="/merchant/apply">商家入驻</router-link>
         <span class="tip">演示管理员可用 admin / admin123</span>
       </div>
@@ -78,17 +80,22 @@ h2 {
   color: #606266;
   font-size: 14px;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: baseline;
   gap: 8px;
-  align-items: center;
 }
 .sep {
   margin: 0 6px;
   color: #c0c4cc;
 }
 .tip {
+  flex-basis: 100%;
+  text-align: center;
   color: #909399;
   font-size: 12px;
+  margin-top: 4px;
 }
 a {
   color: #409eff;

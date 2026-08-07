@@ -15,6 +15,12 @@ const routes = [
     meta: { public: true, title: '注册' }
   },
   {
+    path: '/forgot-password',
+    name: 'ForgotPassword',
+    component: () => import('@/views/auth/ForgotPassword.vue'),
+    meta: { public: true, title: '忘记密码' }
+  },
+  {
     path: '/',
     component: () => import('@/layouts/MainLayout.vue'),
     children: [
