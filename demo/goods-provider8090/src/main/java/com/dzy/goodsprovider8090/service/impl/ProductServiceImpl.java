@@ -195,6 +195,19 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    public void restoreFromPlatformOff(Long productId) {
+        Product product = productMapper.selectById(productId);
+        if (product == null) {
+            throw new BusinessException("商品不存在");
+        }
+        if (!Constants.PRODUCT_PLATFORM_OFF.equals(product.getStatus())) {
+            throw new BusinessException("仅平台下架状态的商品可恢复");
+        }
+        productMapper.updateStatus(productId, Constants.PRODUCT_OFF_SALE);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
     public void offlineByMerchant(Long merchantId) {
         productMapper.offlineByMerchant(merchantId);
     }

@@ -74,3 +74,8 @@ export function adminGoodsList(params) {
 export function platformOff(productId) {
   return request.put(`/goods/admin/${productId}/platform-off`)
 }
+
+/** 管理员：恢复平台下架 */
+export function restoreFromPlatformOff(productId) {
+  return request.put(`/goods/admin/${productId}/restore`)
+}

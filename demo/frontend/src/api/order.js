@@ -21,6 +21,11 @@ export function confirmOrder(orderNo) {
   return request.post(`/orders/${orderNo}/confirm`)
 }
 
+/** 用户确认送达：DELIVERING → DELIVERED */
+export function receiveOrder(orderNo) {
+  return request.post(`/orders/${orderNo}/receive`)
+}
+
 export function createPayment(data) {
   return request.post('/payments/create', data)
 }
@@ -57,6 +62,11 @@ export function hideReview(id) {
 /** 商家配送管理 */
 export function getMerchantOrders() {
   return request.get('/orders/merchant')
+}
+
+/** 商家订单详情 */
+export function getMerchantOrderDetail(orderNo) {
+  return request.get(`/orders/merchant/${orderNo}`)
 }
 
 export function updateDeliveryStatus(orderNo, data) {
