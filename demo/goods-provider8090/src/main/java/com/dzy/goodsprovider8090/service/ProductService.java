@@ -35,6 +35,9 @@ public interface ProductService {
 
     void platformOff(Long productId);
 
+    /** 恢复被平台强制下架的商品：PLATFORM_OFF → OFF_SALE */
+    void restoreFromPlatformOff(Long productId);
+
     void offlineByMerchant(Long merchantId);
 
     void offlineByStore(Long storeId);

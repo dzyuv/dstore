@@ -5,6 +5,7 @@ import com.dzy.common.entity.User;
 import com.dzy.common.exception.BusinessException;
 import com.dzy.userservice.dto.LoginRequest;
 import com.dzy.userservice.dto.RegisterRequest;
+import com.dzy.userservice.dto.ResetPasswordRequest;
 import com.dzy.userservice.mapper.UserMapper;
 import com.dzy.userservice.service.SmsService;
 import com.dzy.userservice.service.UserService;
@@ -87,6 +88,17 @@ public class UserServiceImpl implements UserService {
         userMapper.addUser(user);
         user.setPasswordHash(null);
         return user;
+    }
+
+    @Override
+    public void resetPassword(ResetPasswordRequest request) {
+        smsService.verifyCode(request.getPhone(), "RESET_PASSWORD", request.getSmsCode());
+        User user = userMapper.selectByPhone(request.getPhone());
+        if (user == null) {
+            throw new BusinessException("该手机号未注册");
+        }
+        userMapper.updatePassword(user.getId(), BCrypt.hashpw(request.getNewPassword(), BCrypt.gensalt()));
+        log.info("密码重置成功: {}", request.getPhone());
     }
 
     @Override

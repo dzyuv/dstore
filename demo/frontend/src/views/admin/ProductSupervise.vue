@@ -44,8 +44,16 @@
             <el-tag size="small" :type="statusType(row.status)">{{ statusText(row.status) }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="100" fixed="right">
+        <el-table-column label="操作" width="160" fixed="right">
           <template #default="{ row }">
+            <el-button
+              v-if="row.status === 'PLATFORM_OFF'"
+              link
+              type="primary"
+              @click="onRestore(row)"
+            >
+              恢复
+            </el-button>
             <el-button
               link
               type="danger"
@@ -75,7 +83,7 @@
 <script setup>
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { adminGoodsList, platformOff } from '@/api/goods'
+import { adminGoodsList, platformOff, restoreFromPlatformOff } from '@/api/goods'
 
 const loading = ref(false)
 const list = ref([])
@@ -118,6 +126,17 @@ async function onPlatformOff(row) {
   )
   await platformOff(row.id)
   ElMessage.success('已强制下架')
+  load(query.page)
+}
+
+async function onRestore(row) {
+  await ElMessageBox.confirm(
+    `确认恢复「${row.name}」？恢复后状态将变为"已下架"，商家可自行上架。`,
+    '平台监管',
+    { type: 'warning' }
+  )
+  await restoreFromPlatformOff(row.id)
+  ElMessage.success('已恢复')
   load(query.page)
 }
 

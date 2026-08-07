@@ -1,5 +1,5 @@
 <template>
-  <div class="page">
+  <div class="page apply-page">
     <div class="page-card apply-card">
       <h2 style="margin-top: 0">商家入驻申请</h2>
       <p class="text-muted tip">
@@ -82,8 +82,17 @@ async function onSubmit() {
 </script>
 
 <style scoped>
+.apply-page {
+  display: flex;
+  justify-content: center;
+  padding-top: 32px;
+}
 .apply-card {
+  width: 100%;
   max-width: 720px;
+}
+.apply-card :deep(.el-form) {
+  margin: 0 auto;
 }
 .tip {
   margin-bottom: 20px;

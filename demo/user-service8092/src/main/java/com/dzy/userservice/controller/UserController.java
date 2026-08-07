@@ -5,6 +5,7 @@ import com.dzy.common.entity.ResultJSON;
 import com.dzy.common.entity.User;
 import com.dzy.userservice.dto.LoginRequest;
 import com.dzy.userservice.dto.RegisterRequest;
+import com.dzy.userservice.dto.ResetPasswordRequest;
 import com.dzy.userservice.dto.SendSmsRequest;
 import com.dzy.userservice.service.SmsService;
 import com.dzy.userservice.service.UserService;
@@ -39,6 +40,12 @@ public class UserController {
     public ResultJSON register(@Valid @RequestBody RegisterRequest request) {
         User user = userService.register(request);
         return ResultJSON.success(user);
+    }
+
+    @PostMapping("/password/reset")
+    public ResultJSON resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        userService.resetPassword(request);
+        return ResultJSON.success(Map.of("message", "密码已重置"));
     }
 
     @GetMapping("/me")

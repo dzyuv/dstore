@@ -60,7 +60,29 @@ public class OrderController {
     @GetMapping("/merchant")
     public ResultJSON merchantOrders(@RequestHeader(Constants.HEADER_USER_ID) Long userId) {
         Long merchantId = requireMerchantId(userId);
-        return ResultJSON.success(orderMapper.selectByMerchant(merchantId));
+        List<Order> orders = orderMapper.selectByMerchant(merchantId);
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (Order o : orders) {
+            Map<String, Object> m = new HashMap<>();
+            m.put("order", o);
+            m.put("delivery", deliveryMapper.selectByOrderNo(o.getOrderNo()));
+            result.add(m);
+        }
+        return ResultJSON.success(result);
+    }
+
+    /** 商家订单详情 */
+    @GetMapping("/merchant/{orderNo}")
+    public ResultJSON merchantDetail(@RequestHeader(Constants.HEADER_USER_ID) Long userId,
+                                     @PathVariable String orderNo) {
+        Long merchantId = requireMerchantId(userId);
+        Order order = orderMapper.selectByOrderNo(orderNo);
+        if (order == null || !merchantId.equals(order.getMerchantId())) {
+            return ResultJSON.error(404, "订单不存在或不属于当前商家");
+        }
+        List<OrderItem> items = orderItemMapper.selectByOrderNo(orderNo);
+        Delivery delivery = deliveryMapper.selectByOrderNo(orderNo);
+        return ResultJSON.success(Map.of("order", order, "items", items, "delivery", delivery));
     }
 
     /**
@@ -310,6 +332,21 @@ public class OrderController {
             return ResultJSON.error(400, "仅已送达订单可确认收货");
         }
         orderMapper.updateStatus(orderNo, Constants.ORDER_COMPLETED, null);
+        return ResultJSON.success();
+    }
+
+    /** 用户确认送达：DELIVERING → DELIVERED */
+    @PostMapping("/{orderNo}/receive")
+    public ResultJSON receive(@RequestHeader(Constants.HEADER_USER_ID) Long userId,
+                              @PathVariable String orderNo) {
+        Order order = orderMapper.selectByOrderNo(orderNo);
+        if (order == null || !order.getUserId().equals(userId)) {
+            return ResultJSON.error(404, "订单不存在");
+        }
+        if (!Constants.ORDER_DELIVERING.equals(order.getStatus())) {
+            return ResultJSON.error(400, "仅配送中订单可确认送达");
+        }
+        orderMapper.updateStatus(orderNo, Constants.ORDER_DELIVERED, null);
         return ResultJSON.success();
     }
 }

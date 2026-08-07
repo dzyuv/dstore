@@ -171,6 +171,15 @@ public class GoodsController {
         return ResultJSON.success();
     }
 
+    /** 恢复平台强制下架的商品 */
+    @PutMapping("/admin/{productId}/restore")
+    public ResultJSON restoreFromPlatformOff(@RequestHeader(value = Constants.HEADER_ROLE, required = false) String role,
+                                             @PathVariable Long productId) {
+        requireAdmin(role);
+        productService.restoreFromPlatformOff(productId);
+        return ResultJSON.success();
+    }
+
     /** 全平台商品检索 */
     @GetMapping("/admin/list")
     public ResultJSON adminList(@RequestHeader(value = Constants.HEADER_ROLE, required = false) String role,

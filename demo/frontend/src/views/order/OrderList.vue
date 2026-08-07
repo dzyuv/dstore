@@ -23,7 +23,7 @@
           </template>
         </el-table-column>
         <el-table-column prop="createdAt" label="下单时间" min-width="160" />
-        <el-table-column label="操作" width="280" fixed="right">
+        <el-table-column label="操作" width="320" fixed="right">
           <template #default="{ row }">
             <el-button link type="primary" @click="openDetail(row)">详情</el-button>
             <el-button link type="primary" @click="onPay(row)" v-if="row.status === 'PENDING_PAY'">
@@ -36,6 +36,14 @@
               v-if="row.status === 'PENDING_PAY' || row.status === 'PAID' || row.status === 'PICKING'"
             >
               取消
+            </el-button>
+            <el-button
+              link
+              type="success"
+              @click="onReceive(row)"
+              v-if="row.status === 'DELIVERING'"
+            >
+              确认送达
             </el-button>
             <el-button
               link
@@ -138,6 +146,7 @@ import {
   getOrderDetail,
   cancelOrder,
   confirmOrder,
+  receiveOrder,
   createPayment,
   paymentCallback,
   createReview
@@ -238,6 +247,13 @@ async function onConfirm(row) {
   await ElMessageBox.confirm('确认已收到商品？', '确认收货')
   await confirmOrder(row.orderNo)
   ElMessage.success('已确认收货')
+  await load()
+}
+
+async function onReceive(row) {
+  await ElMessageBox.confirm('确认商品已送达？', '确认送达')
+  await receiveOrder(row.orderNo)
+  ElMessage.success('已确认送达')
   await load()
 }
 
