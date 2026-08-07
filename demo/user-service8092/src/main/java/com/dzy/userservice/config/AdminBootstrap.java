@@ -10,10 +10,7 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Component;
 
-/**
- * 演示环境：启动时确保 admin / admin123 可用。
- * 原 init.sql 中 BCrypt 哈希无效会导致「用户名或密码错误」。
- */
+
 @Component
 public class AdminBootstrap implements ApplicationRunner {
 
